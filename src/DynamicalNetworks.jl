@@ -1,5 +1,18 @@
+
+#= 
+    A simulator for dynamical networks.
+=#
 module DynamicalNetworks
 
-greet() = print("Hello World!")
+using Reexport
+@reexport using Jusdl
+
+# Includes 
+include("pcm.jl")
+include("network.jl")
+
+# Exporst 
+export PCM
+export network_model
 
 end # module
