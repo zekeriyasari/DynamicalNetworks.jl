@@ -5,7 +5,7 @@
 
 Returns a ready-to-be-simulated network model. The nodes of network evolves by `dynamics`. `E` determines the topology and `P` determines the nodes are connected. `model_args` and `model_kwargs` are passed to `Model`.
 """
-function netmodel(dynamics, E, P; clock=Clock(0., 0.01, 1.))
+function netmodel(dynamics, E, P; clock=Clock(0., 0.01, 1.), nodekwargs=NamedTuple())
     # Construct the model 
     model = Model(clock=clock)
 
@@ -14,7 +14,7 @@ function netmodel(dynamics, E, P; clock=Clock(0., 0.01, 1.))
     d = size(P)[1] 
 
     # Construct the nodes 
-    foreach(i -> addnode!(model, dynamics(Inport(d), Outport(d)), label=Symbol("node$i")), 1 : n)
+    foreach(i -> addnode!(model, dynamics(Inport(d), Outport(d); nodekwargs...), label=Symbol("node$i")), 1 : n)
     addnode!(model, Coupler(E, P), label=Symbol("coupler"))
     addnode!(model, Writer(Inport(n * d)), label=Symbol("writer"))
 
