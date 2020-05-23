@@ -4,15 +4,19 @@
 =#
 module DynamicalNetworks
 
+using UUIDs
 using Reexport
+using DifferentialEquations
 @reexport using Jusdl
 
 # Includes 
 include("pcm.jl")
 include("network.jl")
+include("nodedynamics.jl")
 
-# Exporst 
+# Exports 
 export PCM
 export netmodel
+export NoisyLorenzSystem
 
 end # module

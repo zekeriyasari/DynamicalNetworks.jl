@@ -7,13 +7,13 @@ using Plots
 n = 2 
 d = 3 
 ε = 10. 
-T = 50.
+T = 100.
 E = [
     PCM(low=-ε, high=0., period=T) PCM(low=ε, high=0., period=T);
     PCM(low=ε, high=0., period=T)  PCM(low=-ε, high=0., period=T)
     ]
 P = [1 0 0; 0 0 0; 0 0 0]
-model = netmodel(LorenzSystem, E, P, clock=Clock(0., 0.01, 100.))
+model = netmodel(NoisyLorenzSystem, E, P, clock=Clock(0., 0.01, 500.))
 sim = simulate!(model)
 
 # Read simuation data 
