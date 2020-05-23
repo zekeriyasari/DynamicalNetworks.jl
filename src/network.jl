@@ -1,11 +1,11 @@
 
 
 """
-    network_model(dynamics, E, P)
+    netmodel(dynamics, E, P)
 
 Returns a ready-to-be-simulated network model. The nodes of network evolves by `dynamics`. `E` determines the topology and `P` determines the nodes are connected. `model_args` and `model_kwargs` are passed to `Model`.
 """
-function network_model(dynamics, E, P; clock=Clock(0., 0.01, 1.))
+function netmodel(dynamics, E, P; clock=Clock(0., 0.01, 1.))
     # Construct the model 
     model = Model(clock=clock)
 

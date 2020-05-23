@@ -13,6 +13,6 @@ include("network.jl")
 
 # Exporst 
 export PCM
-export network_model
+export netmodel
 
 end # module

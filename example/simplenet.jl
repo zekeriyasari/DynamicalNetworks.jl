@@ -1,3 +1,5 @@
+# This file includes the simulation of time-varying network.
+
 using DynamicalNetworks 
 using Plots 
 
@@ -11,7 +13,7 @@ E = [
     PCM(low=ε, high=0., period=T)  PCM(low=-ε, high=0., period=T)
     ]
 P = [1 0 0; 0 0 0; 0 0 0]
-model = network_model(LorenzSystem, E, P, clock=Clock(0., 0.01, 100.))
+model = netmodel(LorenzSystem, E, P, clock=Clock(0., 0.01, 100.))
 sim = simulate!(model)
 
 # Read simuation data 
