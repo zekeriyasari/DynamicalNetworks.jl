@@ -4,6 +4,7 @@
 =#
 module DynamicalNetworks
 
+using DocStringExtensions
 using Reexport 
 @reexport using Jusdl
 using LightGraphs 
@@ -14,7 +15,7 @@ include("pcm.jl")
 include("network.jl")
 
 # Exports 
-export PCM
+export PCM, Falling, Rising, switch!
 export network, coupling
 
 end # module
