@@ -1,11 +1,6 @@
 # This file includes network functions. 
 
-"""
-    network(dynamics, E, P; nodekwargs...) 
-
-Constructs a network with node dynamics `dynamics` connection matrix E, coupling matric P 
-"""
-function network(dynamics, E::AbstractMatrix, P::AbstractMatrix; nodekwargs...)
+function network(components::AbstractVector{<:AbstractDynamicSystem}, E::AbstractMatrix, P::AbstractMatrix)
     # Extract network dimensions
     n = size(E, 1) 
     d = size(P, 1) 
@@ -13,10 +8,11 @@ function network(dynamics, E::AbstractMatrix, P::AbstractMatrix; nodekwargs...)
     # Construct model 
     model = Model() 
 
-    # Construct the nodes 
-    foreach(i -> addnode!(model, dynamics(input=Inport(d),output=Outport(d); nodekwargs...), label=Symbol("node$i")), 
-        1 : n)
-    addnode!(model, Coupler(conmat=E, cplmat=P), label=Symbol("coupler"))
+    # Construct the components 
+    for (i, component) in enumerate(components)
+        addnode!(model, component, label=Symbol("node$i"))
+    end
+    addnode!(model, Coupler(conmat=E, P=P), label=Symbol("coupler"))
 
     # Add branches to the model 
     coupleridx = n + 1
@@ -29,8 +25,16 @@ function network(dynamics, E::AbstractMatrix, P::AbstractMatrix; nodekwargs...)
     model
 end
 
-network(dynamics, topology::AbstractGraph, cplmat::AbstractMatrix; weight = 1., nodekwargs...) = 
-    network(dynamics, weight * collect(-laplacian_matrix(topology)), cplmat; nodekwargs...)
+function network(dynamics::Type{<:AbstractDynamicSystem}, E::AbstractMatrix, P::AbstractMatrix; nodekwargs...)
+    n = size(E, 1)
+    d = size(P, 1)
+    components = [dynamics(input=Inport(d),output=Outport(d); nodekwargs...) for i in 1 : n]
+    network(components, E, P)
+end
+
+network(components::AbstractVector{<:AbstractDynamicSystem}, topology::AbstractGraph, P::AbstractMatrix; weight=1., nodekwargs...) = 
+    network(dynamics,  weight * collect(-laplacian_matrix(topology)), P; weight = 1., nodekwargs...) = 
+
 
 
 function coupling(n::Int, d::Int)

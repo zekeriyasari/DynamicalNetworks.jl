@@ -12,6 +12,7 @@ ti = 0.
 dt = 0.01 
 tf = 1000.
 ε = 10.
+η = [1., 0., 0.]
 pcm = PCM(high=ε, low=0.01ε, period=T) 
 
 E = [
@@ -21,7 +22,7 @@ E = [
     t -> ε          t -> -ε             t -> 3ε     t -> -3ε
     ]
 P = coupling(1, 3)
-netmodel = network(ForcedNoisyLorenzSystem, E, P)
+netmodel = network(ForcedNoisyLorenzSystem, E, P, η=η)
 
 # Add writer to netmodel 
 addnode!(netmodel, Writer(input=Inport(12)), label=:writer)
