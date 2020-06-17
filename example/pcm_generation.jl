@@ -4,7 +4,7 @@ using Plots
 using DynamicalNetworks 
 
 # Test 
-p = PCM(duty=0.25) 
+p = PCM() 
 ti, dt, tf = 0., 0.01, 10.
 t = ti : dt : tf - dt 
 plot(t, p.(t))
