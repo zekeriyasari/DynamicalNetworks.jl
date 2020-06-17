@@ -1,34 +1,40 @@
+# This file includes network functions. 
+
+@def_model struct Network <: AbstractModel
+    dynamics::DY 
+    conmat::CM 
+    cplmat::CP  
+end 
 
 
 """
-    netmodel(dynamics, E, P)
+    network(dynamics, E, P; nodekwargs...) 
 
-Returns a ready-to-be-simulated network model. The nodes of network evolves by `dynamics`. `E` determines the topology and `P` determines the nodes are connected. `model_args` and `model_kwargs` are passed to `Model`.
+Constructs a network with node dynamics `dynamics` connection matrix E, coupling matric P 
 """
-function netmodel(dynamics, E, P; clock=Clock(0., 0.01, 1.), nodekwargs=NamedTuple())
-    # Construct the model 
-    model = Model(clock=clock)
+function network(dynamics, E::AbstractMatrix, P::AbstractMatrix; nodekwargs...)
+    # Extract network dimensions
+    n = size(E, 1) 
+    d = size(P, 1) 
 
-    # Construct the coupler 
-    n = size(E)[1] 
-    d = size(P)[1] 
+    # Construct model 
+    model = Model() 
 
     # Construct the nodes 
-    foreach(i -> addnode!(model, dynamics(Inport(d), Outport(d); nodekwargs...), label=Symbol("node$i")), 1 : n)
-    addnode!(model, Coupler(E, P), label=Symbol("coupler"))
-    addnode!(model, Writer(Inport(n * d)), label=Symbol("writer"))
+    foreach(i -> addnode!(model, dynamics(input=Inport(d),output=Outport(d); nodekwargs...), label=Symbol("node$i")), 
+        1 : n)
+    addnode!(model, Coupler(conmat=E, cplmat=P), label=Symbol("coupler"))
 
     # Add branches to the model 
-    cidx, widx = n + 1, n + 2
+    coupleridx = n + 1
     for (j, k) in zip(1 : n, map(i -> i : i + d - 1, 1 : d : n * d))
-        addbranch!(model, j => cidx, 1 : d => k)
-        addbranch!(model, cidx => j, k => 1 : d)
-        addbranch!(model, j => widx, 1 : d => k)
+        addbranch!(model, j => coupleridx, 1 : d => k)
+        addbranch!(model, coupleridx => j, k => 1 : d)
     end
 
     # Return the model 
-    model 
+    model
 end
 
-function outer_matrix end 
-function inner_matrix end 
+network(dynamics, topology::AbstractGraph, cplmat::AbstractMatrix, weight = 1.; nodekwargs...) = 
+    network(dynamics, weight * collect(-laplacian_matrix(topology)), cplmat; nodekwargs...)
