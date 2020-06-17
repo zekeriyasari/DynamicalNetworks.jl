@@ -1,12 +1,5 @@
 # This file includes network functions. 
 
-@def_model struct Network <: AbstractModel
-    dynamics::DY 
-    conmat::CM 
-    cplmat::CP  
-end 
-
-
 """
     network(dynamics, E, P; nodekwargs...) 
 
@@ -36,5 +29,18 @@ function network(dynamics, E::AbstractMatrix, P::AbstractMatrix; nodekwargs...)
     model
 end
 
-network(dynamics, topology::AbstractGraph, cplmat::AbstractMatrix, weight = 1.; nodekwargs...) = 
+network(dynamics, topology::AbstractGraph, cplmat::AbstractMatrix; weight = 1., nodekwargs...) = 
     network(dynamics, weight * collect(-laplacian_matrix(topology)), cplmat; nodekwargs...)
+
+
+function coupling(n::Int, d::Int)
+    v = zeros(d)
+    v[n] = 1.
+    diagm(v)
+end
+
+function coupling(n::AbstractVector, d::Int)
+    v = zeros(d)
+    v[n] .= 1.
+    diagm(v)
+end
