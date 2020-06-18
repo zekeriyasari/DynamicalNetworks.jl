@@ -7,12 +7,12 @@ using Plots
 # Construct the netmodel 
 n = 4 
 d = 3 
-T = 200. 
+T = 200.
 ti = 0. 
 dt = 0.01 
 tf = 1000.
 ε = 10.
-η = [1., 0., 0.]
+η = [5., 0., 0.]
 pcm = PCM(high=ε, low=0.01ε, period=T) 
 
 E = [
@@ -22,7 +22,8 @@ E = [
     t -> ε          t -> -ε             t -> 3ε     t -> -3ε
     ]
 P = coupling(1, 3)
-netmodel = network(ForcedNoisyLorenzSystem, E, P, η=η)
+components = [ForcedNoisyLorenzSystem(input=Inport(d), output=Outport(d), η=η) for i in 1 : n]
+netmodel = network(components, E, P)
 
 # Add writer to netmodel 
 addnode!(netmodel, Writer(input=Inport(12)), label=:writer)
@@ -38,8 +39,20 @@ sim = simulate!(netmodel, ti, dt, tf - dt)
 t, x = read(getnode(netmodel, :writer).component)
 
 # Plot the results 
-plot(layout=(2,2), xticks = ti : T : tf)
-plot!(t, x[:, 1],               subplot=1)
-plot!(t, x[:, 1] - x[:, 4],     subplot=2)
-plot!(t, x[:, 4] - x[:, 7],     subplot=3)
-plot!(t, x[:, 7] - x[:, 10],    subplot=4)
+plot(layout=(2,2))
+plot!(t, x[:, 1],               subplot=1); vline!(ti : T : tf, subplot=1, label="")
+plot!(t, x[:, 1] - x[:, 4],     subplot=2); vline!(ti : T : tf, subplot=2, label="")
+plot!(t, x[:, 4] - x[:, 7],     subplot=3); vline!(ti : T : tf, subplot=3, label="")
+plot!(t, x[:, 7] - x[:, 10],    subplot=4); vline!(ti : T : tf, subplot=4, label="")
+
+# Bit detection 
+s = abs.(x[:, 7] - x[:, 10])
+plot(t,s); vline!(ti : T : tf, label="")
+
+sample_per_bits = floor(Int, T / dt)
+parts = collect(Iterators.partition(s, sample_per_bits))
+plt = plot(layout=(3,2))
+for (i, part) in enumerate(parts)
+    plot!(part, subplot=i, label="")
+end
+plt
