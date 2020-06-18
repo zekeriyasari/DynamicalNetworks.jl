@@ -53,6 +53,29 @@ sample_per_bits = floor(Int, T / dt)
 parts = collect(Iterators.partition(s, sample_per_bits))
 plt = plot(layout=(3,2))
 for (i, part) in enumerate(parts)
-    plot!(part, subplot=i, label="")
+    plot!(part, subplot=i)
 end
 plt
+
+# Take to waveform parts
+sp1 = s[1 : sample_per_bits]
+cs1 = cumsum(sp1)
+l1 = collect(range(cs1[1], stop=cs1[end], step=(cs1[end]-cs1[1]) / (length(cs1) - 1)))
+sp2 = s[sample_per_bits + 1 : 2 * sample_per_bits]
+cs2 = cumsum(sp2)
+l2 = collect(range(cs2[1], stop=cs2[end], step=(cs2[end]-cs2[1]) / (length(cs2) - 1)))
+
+# Plot cumsums
+plt = plot(layout=(4,1))
+plot!(sp1, subplot=1)
+plot!(cs1, subplot=2)
+plot!(l1, subplot=2)
+plot!(sp2, subplot=3)
+plot!(cs2, subplot=4)
+plot!(l2, subplot=4)
+
+# Check convexity 
+mean((cs1 - l1))
+mean((cs2 - l2))
+
+
