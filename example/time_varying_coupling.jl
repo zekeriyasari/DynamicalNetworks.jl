@@ -3,16 +3,18 @@
 
 using DynamicalNetworks 
 using Plots 
+using Statistics
+using DifferentialEquations
 
 # Construct the netmodel 
 n = 4 
 d = 3 
-T = 200.
+T = 100.
 ti = 0. 
 dt = 0.01 
 tf = 1000.
 ε = 10.
-η = [5., 0., 0.]
+η = 5.
 pcm = PCM(high=ε, low=0.01ε, period=T) 
 
 E = [
@@ -22,7 +24,44 @@ E = [
     t -> ε          t -> -ε             t -> 3ε     t -> -3ε
     ]
 P = coupling(1, 3)
-components = [ForcedNoisyLorenzSystem(input=Inport(d), output=Outport(d), η=η) for i in 1 : n]
+noise = WienerProcess(0., zeros(4))
+function lorenzdrift(dx, x, u, t, σ=10., β=8/3, ρ=28, cplmat=P)
+    dx[1] = σ * (x[2] - x[1])
+    dx[2] = x[1] * (ρ - x[3]) - x[2]
+    dx[3] = x[1] * x[2] - β * x[3]
+    dx .+= cplmat * map(ui -> ui(t), u.itp)   # Couple inputs
+end
+g1 = [
+    η η 0 0; 
+    0 0 0 0; 
+    0 0 0 0
+] 
+g2 = [
+    0 0 η η; 
+    0 0 0 0; 
+    0 0 0 0
+] 
+g3 = [
+    -η 0 -η 0; 
+    0 0 0 0; 
+    0 0 0 0
+] 
+g4 = [
+    0 -η 0 -η; 
+    0 0 0 0; 
+    0 0 0 0
+] 
+
+components = [
+    SDESystem(drift=lorenzdrift, diffusion=(dx, x, u, t) -> (dx .= g1), readout=readout, state=rand(3), 
+        input=Inport(3), output=Outport(3),  modelkwargs=(noise=noise, noise_rate_prototype=zeros(3,4))) ;
+    SDESystem(drift=lorenzdrift, diffusion=(dx, x, u, t) -> (dx .= g2), readout=readout, state=rand(3), 
+        input=Inport(3), output=Outport(3),  modelkwargs=(noise=noise, noise_rate_prototype=zeros(3,4))) ;
+    SDESystem(drift=lorenzdrift, diffusion=(dx, x, u, t) -> (dx .= g3), readout=readout, state=rand(3), 
+        input=Inport(3), output=Outport(3),  modelkwargs=(noise=noise, noise_rate_prototype=zeros(3,4))) ;
+    SDESystem(drift=lorenzdrift, diffusion=(dx, x, u, t) -> (dx .= g4), readout=readout, state=rand(3), 
+        input=Inport(3), output=Outport(3),  modelkwargs=(noise=noise, noise_rate_prototype=zeros(3,4))) ;
+    ]
 netmodel = network(components, E, P)
 
 # Add writer to netmodel 
@@ -51,8 +90,29 @@ plot(t,s); vline!(ti : T : tf, label="")
 
 sample_per_bits = floor(Int, T / dt)
 parts = collect(Iterators.partition(s, sample_per_bits))
-plt = plot(layout=(3,2))
+plt = plot(layout=(5,2))
 for (i, part) in enumerate(parts)
     plot!(part, subplot=i, label="")
 end
 plt
+
+# Take to waveform parts
+sp1 = s[1 : sample_per_bits]
+cs1 = cumsum(sp1)
+l1 = collect(range(cs1[1], stop=cs1[end], step=(cs1[end]-cs1[1]) / (length(cs1) - 1)))
+sp2 = s[3 * sample_per_bits + 1 : 4 * sample_per_bits]
+cs2 = cumsum(sp2)
+l2 = collect(range(cs2[1], stop=cs2[end], step=(cs2[end]-cs2[1]) / (length(cs2) - 1)))
+
+# Plot cumsums
+plt = plot(layout=(4,1))
+plot!(sp1, subplot=1)
+plot!(cs1, subplot=2)
+plot!(l1, subplot=2)
+plot!(sp2, subplot=3)
+plot!(cs2, subplot=4)
+plot!(l2, subplot=4)
+
+# Check convexity
+mean((cs1 - l1))
+mean((cs2 - l2))

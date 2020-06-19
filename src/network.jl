@@ -39,9 +39,9 @@ network(dynamics::Type{<:AbstractDynamicSystem}, topology::AbstractGraph, P::Abs
 
 
 """
-    coupling(n, d)
+    coupling(n::Int, d::Int)
 
-Returns 
+Returns a couping matrix of size d × d such that nth element of the diagonal is 1.
 """
 function coupling(n::Int, d::Int)
     v = zeros(d)
@@ -49,6 +49,11 @@ function coupling(n::Int, d::Int)
     diagm(v)
 end
 
+"""
+    coupling(n::AbstractVector, d::Int) 
+
+Returns coupling matrix of size d × d such that diagoal elements corresponing to n is 1.
+"""
 function coupling(n::AbstractVector, d::Int)
     v = zeros(d)
     v[n] .= 1.
