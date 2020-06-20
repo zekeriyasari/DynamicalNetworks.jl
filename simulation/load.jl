@@ -7,9 +7,20 @@ Pkg.activate(joinpath(Pkg.envdir(), "dev-env"))
 # Load packages 
 using DifferentialEquations 
 using DynamicalNetworks 
+using LinearAlgebra
+using Logging
+
+# Convert snr to noise strength
+to_noise_strength(snr) = sqrt(10^(snr / 10))
+
+# Find the directory corresponding to snr
+snrdir(simdir, snr) = abspath(only(findall(dir -> split(basename(dir), "dB")[1] == string(snr), readdir(simdir))))
+# snrdir(simdir, snr) = abspath(only(findall(dir -> endswith(dir, string(snr)*"dB"), readdir(simdir))))
 
 # Define worker function
-function runsim(η=1., args...; kwargs...)
+function _runsim(simdir, snr, numexp, args...; kwargs...)
+    @info "Started for snr=$snr exp=$numexp"
+    η = to_noise_strength(snr)
     n = 4           # Number of nodes 
     d = 3           # Dimensio of nodes 
     T = 100.        # Bit duration 
@@ -29,68 +40,35 @@ function runsim(η=1., args...; kwargs...)
     
     P = coupling(1, 3)      # Coupling matrix 
     
-    noise = WienerProcess(0., zeros(4))     # Sytem noise 
-
-    function lorenzdrift(dx, x, u, t, σ=10., β=8/3, ρ=28, cplmat=P)  # Drift function
-        dx[1] = σ * (x[2] - x[1])
-        dx[2] = x[1] * (ρ - x[3]) - x[2]
-        dx[3] = x[1] * x[2] - β * x[3]
-        dx .+= cplmat * map(ui -> ui(t), u.itp)
-    end
-
-    function diffusion1(dx, x, u, t)    # Diffusion function of node1
-        dx .= [
-            η η 0 0; 
-            0 0 0 0; 
-            0 0 0 0
-            ] 
-    end
-    function diffusion2(dx, x, u, t)    # Diffusion fucntion of node2
-        dx .= [
-            0 0 η η; 
-            0 0 0 0; 
-            0 0 0 0
-            ] 
-    end
-    function diffusion3(dx, x, u, t)    # Diffusion function of node3
-        dx .= [
-            -η 0 -η 0; 
-            0 0 0 0; 
-            0 0 0 0
-            ] 
-    end
-    function diffusion4(dx, x, u, t)    # Diffusion function of node4
-        dx .= [
-            0 -η 0 -η; 
-            0 0 0 0; 
-            0 0 0 0
-            ] 
-    end
+    noise = WienerProcess(0., zeros(n*d))     # System noise 
 
     readout(x, u, t) = x        # Readout function of all nodes
 
-    components = [      # Components 
-        SDESystem(drift=lorenzdrift, diffusion=diffusion1, readout=readout, state=rand(3), 
-            input=Inport(3), output=Outport(3),  modelkwargs=(noise=noise, noise_rate_prototype=zeros(3,4))) ;
-        SDESystem(drift=lorenzdrift, diffusion=diffusion2, readout=readout, state=rand(3), 
-            input=Inport(3), output=Outport(3),  modelkwargs=(noise=noise, noise_rate_prototype=zeros(3,4))) ;
-        SDESystem(drift=lorenzdrift, diffusion=diffusion3, readout=readout, state=rand(3), 
-            input=Inport(3), output=Outport(3),  modelkwargs=(noise=noise, noise_rate_prototype=zeros(3,4))) ;
-        SDESystem(drift=lorenzdrift, diffusion=diffusion4, readout=readout, state=rand(3), 
-            input=Inport(3), output=Outport(3),  modelkwargs=(noise=noise, noise_rate_prototype=zeros(3,4))) ;
-        ]
-
-    netmodel = network(components, E, P)    # Network model 
+    netmodel = network([
+        ForcedNoisyLorenzSystem(diffusion=(dx, x, u, t) -> (dx .= η * kron([1 1 0 0], P)), modelkwargs=(noise=noise, noise_rate_prototype=zeros(d, n*d))), 
+        ForcedNoisyLorenzSystem(diffusion=(dx, x, u, t) -> (dx .= η * kron([0 0 1 1], P)), modelkwargs=(noise=noise, noise_rate_prototype=zeros(d, n*d))), 
+        ForcedNoisyLorenzSystem(diffusion=(dx, x, u, t) -> (dx .= η * kron([-1 0 -1 0], P)), modelkwargs=(noise=noise, noise_rate_prototype=zeros(d, n*d))), 
+        ForcedNoisyLorenzSystem(diffusion=(dx, x, u, t) -> (dx .= η * kron([0 -1 0 -1], P)), modelkwargs=(noise=noise, noise_rate_prototype=zeros(d, n*d)))], 
+        E, P)   
 
     # Add writer to netmodel 
-    addnode!(netmodel, Writer(input=Inport(12)), label=:writer)
+    snrpath = snrdir(simdir, snr)
+    addnode!(netmodel, Writer(input=Inport(12), path=joinpath(snrpath, "Exp-"*string(numexp))), label=:writer)
     addbranch!(netmodel, :node1 => :writer, 1:3 => 1:3)
     addbranch!(netmodel, :node2 => :writer, 1:3 => 4:6)
     addbranch!(netmodel, :node3 => :writer, 1:3 => 7:9)
     addbranch!(netmodel, :node4 => :writer, 1:3 => 10:12)
 
     # Simulate the netmodel 
-    simulate!(netmodel, ti, dt, tf - dt, args...; kwargs...)
+    simulate!(netmodel, ti, dt, tf - dt, args...; simdir=snrpath)
+
+    @info "Done for snr=$snr exp=$numexp"
+end
+
+function runsim(simdir, snr, numexps, args...; kwargs...)
+    for numexp in numexps
+        _runsim(simdir, snr, numexp, args...; kwargs...)
+    end
 end
 
 println("load.jl is loaded.")
