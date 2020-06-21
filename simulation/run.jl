@@ -25,11 +25,11 @@ function parse_commandline_args()
         "--number-of-experiments", "-e"
             help = "Number of processors to use"
             arg_type = Int 
-            default = 10
+            default = 1
         "--number-of-bits", "-b"
             help = "Number of bits to generate"
             arg_type = Int 
-            default = 50
+            default = 5
         "--minimum-snr", "-m"
             help = "Minimum snr value (dB)"
             arg_type = Int 
@@ -50,11 +50,22 @@ function parse_commandline_args()
             help = "Sampling period"
             arg_type = Float64 
             default = 0.01
+        "--report-simulation", "-k"
+            help = "Report simulation"
+            action = :store_true
+        "--withbar", "-w"
+            help = "Run simulation with progress bar and console log."
+            action = :store_true
+        "--log-to-file", "-l"
+            help = "Save simulation runs log to a file."
+            action = :store_true
+        "--log-level", "-v"
+            arg_type = String 
+            default = "info"
     end
 
     return parse_args(s)
 end
-
 
 # ----------------------------------------------- Main ----------------------------------------- #
 
@@ -62,6 +73,11 @@ end
 @info "Parsing commandline arguments..."
 clargs = parse_commandline_args()
 @info "Done."
+
+@info "Simulation configuration"
+for (arg,val) in clargs
+    println("  $arg  =>  $val")
+end
 
 # Add workers 
 @info "Loading processors..."
@@ -73,7 +89,7 @@ nw == np - 1 || addprocs(np - nw)
 # Construct simulation directory
 @info "Constructing simulation directories..."
 simdir = joinpath(clargs["simulation-directory"], 
-    clargs["experiment-prefix"] * replace(split(string(now()), ".")[1], ":" => "-"))
+    clargs["experiment-prefix"] * "-" * replace(split(string(now()), ".")[1], ":" => "-"))
 ispath(simdir) || mkpath(simdir)
 snr_range = collect(range(clargs["minimum-snr"], stop=clargs["maximum-snr"], length=clargs["number-of-snr"]))
 for snr in snr_range
@@ -81,14 +97,44 @@ for snr in snr_range
 end
 @info "Done."
 
+# Configure simulation settings 
+ti = 0.
+dt = clargs["sampling-period"]
+tf = clargs["number-of-bits"] * clargs["bit-duration"]
+_loglevel = clargs["log-level"]
+loglevel = 
+    _loglevel == "info"  ? Logging.Info : 
+    _loglevel == "warn"  ? Logging.Warn : 
+    _loglevel == "debug" ? Logging.Debug : 
+    _loglevel == "error" ? Logging.Error : 
+    error("Unknown log level. Choose from `debug`, `info`, `warn`, `error`")
+numexps = clargs["number-of-experiments"]
+reportsim = clargs["report-simulation"]
+logtofile = clargs["log-to-file"]
+withbar = clargs["withbar"]
+
 # Code loading  
-@info "Loadin code to all processors..."
+@info "Loading code to all processors..."
 @everywhere include(joinpath(@__DIR__, "load.jl"))
 @info "Done."
 
-# Start simulation 
+# Run simulation
 @info "Running simulation..."
 @sync @distributed for snr in snr_range
-    runsim(simdir, snr, clargs["number-of-experiments"])
+    runsim(
+        simdir, snr, ti, dt, tf, numexps, 
+        reportsim=reportsim,
+        loglevel=loglevel,
+        withbar=withbar
+        )
 end 
+@info "Done."
+
+# Record simulation configuration.
+@info "Writing simulation configuration file"
+open(joinpath(simdir, "config.txt"), "w") do io
+    for (arg,val) in clargs
+        write(io, "  $arg  =>  $val\n")
+    end
+end
 @info "Done."

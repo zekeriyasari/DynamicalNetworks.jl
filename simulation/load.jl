@@ -9,17 +9,21 @@ using DifferentialEquations
 using DynamicalNetworks 
 using LinearAlgebra
 using Logging
-
+ 
 # Convert snr to noise strength
 to_noise_strength(snr) = sqrt(10^(snr / 10))
 
 # Find the directory corresponding to snr
-snrdir(simdir, snr) = abspath(only(findall(dir -> split(basename(dir), "dB")[1] == string(snr), readdir(simdir))))
-# snrdir(simdir, snr) = abspath(only(findall(dir -> endswith(dir, string(snr)*"dB"), readdir(simdir))))
+snrdir(simdir, snr) = joinpath(simdir, only(filter(dir -> split(basename(dir), "dB")[1] == string(snr), readdir(simdir))))
 
 # Define worker function
-function _runsim(simdir, snr, numexp, args...; kwargs...)
-    @info "Started for snr=$snr exp=$numexp"
+function _runsim(simdir, snr, numexp, ti, dt, tf, simargs...; simkwargs...)
+    # Check snr path 
+    simpath = simdir 
+    simname = string(snr)*"dB"
+    snrpath = joinpath(simpath, simname)
+    isdir(snrpath) || mkpath(snrpath)
+
     η = to_noise_strength(snr)
     n = 4           # Number of nodes 
     d = 3           # Dimensio of nodes 
@@ -52,7 +56,6 @@ function _runsim(simdir, snr, numexp, args...; kwargs...)
         E, P)   
 
     # Add writer to netmodel 
-    snrpath = snrdir(simdir, snr)
     addnode!(netmodel, Writer(input=Inport(12), path=joinpath(snrpath, "Exp-"*string(numexp))), label=:writer)
     addbranch!(netmodel, :node1 => :writer, 1:3 => 1:3)
     addbranch!(netmodel, :node2 => :writer, 1:3 => 4:6)
@@ -60,15 +63,13 @@ function _runsim(simdir, snr, numexp, args...; kwargs...)
     addbranch!(netmodel, :node4 => :writer, 1:3 => 10:12)
 
     # Simulate the netmodel 
-    simulate!(netmodel, ti, dt, tf - dt, args...; simdir=snrpath)
-
-    @info "Done for snr=$snr exp=$numexp"
+    simulate!(netmodel, ti, dt, tf - dt, simdir=simdir, simname=simname, simprefix=""; simkwargs...)
 end
 
-function runsim(simdir, snr, numexps, args...; kwargs...)
-    for numexp in numexps
-        _runsim(simdir, snr, numexp, args...; kwargs...)
+function runsim(simdir, snr, ti, dt, tf, numexps, simargs...; simkwargs...)
+    for numexp in 1 : numexps
+        _runsim(simdir, snr, numexp, ti, dt, tf, simargs...; simkwargs...)
     end
 end
 
-println("load.jl is loaded.")
+println("load.jl is loaded.") 
