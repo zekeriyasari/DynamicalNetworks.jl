@@ -1,9 +1,10 @@
-# This script runs the simulation 
+# This file includes the script to run a parallel ber-simulation of a cluster synchronization communication.
 
 using Distributed 
 using Dates
 using Logging 
 using ArgParse
+using JLD2, FileIO
 
 # Parse commandline arguments
 function parse_commandline_args()
@@ -130,11 +131,20 @@ withbar = clargs["withbar"]
 end 
 @info "Done."
 
-# Record simulation configuration.
-@info "Writing simulation configuration file"
+# Record simulation configuration in a text file.
+@info "Writing simulation configuration text file"
 open(joinpath(simdir, "config.txt"), "w") do io
     for (arg,val) in clargs
         write(io, "  $arg  =>  $val\n")
+    end
+end
+@info "Done."
+
+# Record simulation in a data file. 
+@info "Writing simulation configuration data file"
+jldopen(joinpath(simdir, "config.jld2"), "w") do file
+    for (arg, val) in clargs
+        file[arg] =  val
     end
 end
 @info "Done."

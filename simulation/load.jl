@@ -1,4 +1,4 @@
-# This file is the load file for parallel simulation 
+# This file includes the code to be loaded on all process during a ber-simulation of cluster synchronnization communication
 
 # Activate dev-env
 using Pkg 
