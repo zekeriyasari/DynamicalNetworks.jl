@@ -102,7 +102,6 @@ end
 ti = 0.
 dt = clargs["sampling-period"]
 tf = clargs["number-of-bits"] * clargs["bit-duration"]
-@warn "Calculated tf = $tf"
 _loglevel = clargs["log-level"]
 loglevel = 
     _loglevel == "info"  ? Logging.Info : 
