@@ -9,6 +9,7 @@ using DifferentialEquations
 using DynamicalNetworks 
 using LinearAlgebra
 using Logging
+using JLD2
  
 # Convert snr to noise strength
 to_noise_strength(snr) = sqrt(10^(snr / 10))
@@ -19,10 +20,13 @@ snrdir(simdir, snr) = joinpath(simdir, only(filter(dir -> split(basename(dir), "
 # Define worker function
 function _runsim(simdir, snr, numexp, ti, dt, tf, simargs...; simkwargs...)
     # Check snr path 
-    simpath = simdir 
-    simname = string(snr)*"dB"
-    snrpath = joinpath(simpath, simname)
-    isdir(snrpath) || mkpath(snrpath)
+    simpath = joinpath(simdir, string(snr)*"dB") 
+    isdir(simpath) || mkpath(simpath)
+
+    simname = "Exp-"*string(numexp)
+    exppath = joinpath(simpath, simname)
+    @show exppath
+    isdir(exppath) || mkpath(exppath)
 
     η = to_noise_strength(snr)
     n = 4           # Number of nodes 
@@ -56,14 +60,20 @@ function _runsim(simdir, snr, numexp, ti, dt, tf, simargs...; simkwargs...)
         E, P)   
 
     # Add writer to netmodel 
-    addnode!(netmodel, Writer(input=Inport(12), path=joinpath(snrpath, "Exp-"*string(numexp))), label=:writer)
+    exppath = joinpath(simpath, simname)
+    addnode!(netmodel, Writer(input=Inport(12), path=joinpath(exppath, "states.jld2")), label=:writer)
     addbranch!(netmodel, :node1 => :writer, 1:3 => 1:3)
     addbranch!(netmodel, :node2 => :writer, 1:3 => 4:6)
     addbranch!(netmodel, :node3 => :writer, 1:3 => 7:9)
     addbranch!(netmodel, :node4 => :writer, 1:3 => 10:12)
 
     # Simulate the netmodel 
-    simulate!(netmodel, ti, dt, tf - dt, simdir=simdir, simname=simname, simprefix=""; simkwargs...)
+    simulate!(netmodel, ti, dt, tf - dt, simdir=simpath, simname=simname, simprefix=""; simkwargs...)
+
+    # Record generated bits 
+    jldopen(joinpath(exppath, "bits.jld2"), "w") do file 
+        file["bits"] = pcm.bits
+    end
 end
 
 function runsim(simdir, snr, ti, dt, tf, numexps, simargs...; simkwargs...)
