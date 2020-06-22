@@ -18,23 +18,19 @@ to_noise_strength(snr) = sqrt(10^(snr / 10))
 snrdir(simdir, snr) = joinpath(simdir, only(filter(dir -> split(basename(dir), "dB")[1] == string(snr), readdir(simdir))))
 
 # Define worker function
-function _runsim(simdir, snr, numexp, ti, dt, tf, simargs...; simkwargs...)
+function _runsim(simdir, snr, numexp, ti, dt, tf; reportsim=false, loglevel=Logging.Info, withbar=false)
     # Check snr path 
     simpath = joinpath(simdir, string(snr)*"dB") 
     isdir(simpath) || mkpath(simpath)
 
     simname = "Exp-"*string(numexp)
     exppath = joinpath(simpath, simname)
-    @show exppath
     isdir(exppath) || mkpath(exppath)
 
     η = to_noise_strength(snr)
     n = 4           # Number of nodes 
     d = 3           # Dimensio of nodes 
     T = 100.        # Bit duration 
-    ti = 0.         # Initial time 
-    dt = 0.01       # Sampling period 
-    tf = 1000.      # Final time 
     ε = 10.         # Couping strength
     
     pcm = PCM(high=ε, low=0.01ε, period=T)      # Pulse code modulation.
@@ -68,7 +64,8 @@ function _runsim(simdir, snr, numexp, ti, dt, tf, simargs...; simkwargs...)
     addbranch!(netmodel, :node4 => :writer, 1:3 => 10:12)
 
     # Simulate the netmodel 
-    simulate!(netmodel, ti, dt, tf - dt, simdir=simpath, simname=simname, simprefix=""; simkwargs...)
+    simulate!(netmodel, ti, dt, tf - dt, simdir=simpath, simname=simname, simprefix="", 
+        reportsim=reportsim, loglevel=loglevel, withbar=withbar)
 
     # Record generated bits 
     jldopen(joinpath(exppath, "bits.jld2"), "w") do file 
@@ -76,9 +73,9 @@ function _runsim(simdir, snr, numexp, ti, dt, tf, simargs...; simkwargs...)
     end
 end
 
-function runsim(simdir, snr, ti, dt, tf, numexps, simargs...; simkwargs...)
+function runsim(simdir, snr, ti, dt, tf, numexps; reportsim=false, loglevel=Logging.Info, withbar=false)
     for numexp in 1 : numexps
-        _runsim(simdir, snr, numexp, ti, dt, tf, simargs...; simkwargs...)
+        _runsim(simdir, snr, numexp, ti, dt, tf, reportsim=reportsim, loglevel=loglevel, withbar=withbar)
     end
 end
 

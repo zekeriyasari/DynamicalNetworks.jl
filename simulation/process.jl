@@ -11,10 +11,16 @@ read_config(simdir) = load(joinpath(simdir, "config.jld2"))
 """ Calculates sample per bits """
 calculate_sample_per_bits(config) = floor(Int, config["bit-duration"] / config["sampling-period"])
 
+function extractbits(error, config)
+    sample_per_bits = calculate_sample_per_bits(config)
+end
+
 """ Process simulation data file """
-function process_file(filepath)
-    t, x = fread(filepath) 
-    s = abs.(x[:, 7] - x[:, 10])
+function process_experiment(exppath)
+    filepath = joinpath(exppath, "states.jld2")
+    t, states = fread(filepath, flatten=true) 
+    error = abs.(states[:, 7] - states[:, 10])
+    extractedbits = extractbits(error)
 end
 
 """ Process all the files in snr directory """
@@ -23,14 +29,14 @@ function process_snrdir(snrdir) end
 """ Process all the files in simulation directory """
 function process_simulation(snrdir) end
 
-# ----------------------------------- Main ------------------------------------- # 
+# # ----------------------------------- Main ------------------------------------- # 
 
-simdir = "/home/sari/Desktop/Simulation-2020-06-21T16-02-05/"
+# simdir = "/home/sari/Desktop/Simulation-2020-06-21T16-02-05/"
 
-# Read all simulation data files 
-filetree = walkdir(simdir)
-take!(filetree) # Pop the root directory `test` in which `runtests.jl` is.
-for (snrdir, _, datafiles) in filetree
-    @show (snrdir, datafiles)
-end
+# # Read all simulation data files 
+# filetree = walkdir(simdir)
+# take!(filetree) # Pop the root directory `test` in which `runtests.jl` is.
+# for (snrdir, _, datafiles) in filetree
+#     @show (snrdir, datafiles)
+# end
 
