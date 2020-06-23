@@ -102,6 +102,7 @@ end
 ti = 0.
 dt = clargs["sampling-period"]
 tf = clargs["number-of-bits"] * clargs["bit-duration"]
+tb = clargs["bit-duration"]
 _loglevel = clargs["log-level"]
 loglevel = 
     _loglevel == "info"  ? Logging.Info : 
@@ -123,7 +124,7 @@ withbar = clargs["withbar"]
 @info "Running simulation..."
 @sync @distributed for snr in snr_range
     runsim(
-        simdir, snr, ti, dt, tf, numexps,
+        simdir, snr, ti, dt, tf, tb, numexps,
         reportsim=reportsim,
         loglevel=loglevel,
         withbar=withbar

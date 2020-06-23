@@ -2,7 +2,8 @@
 
 # Activate dev-env
 using Pkg 
-Pkg.activate(joinpath(Pkg.envdir(), "dev-env"))
+dev_env_path = joinpath(Pkg.envdir(), "dev-env")
+dirname(Pkg.project().path) == dev_env_path || Pkg.activate(dev_env_path)
 
 # Load packages 
 using DifferentialEquations 
@@ -14,11 +15,8 @@ using JLD2
 # Convert snr to noise strength
 to_noise_strength(snr) = sqrt(10^(snr / 10))
 
-# Find the directory corresponding to snr
-snrdir(simdir, snr) = joinpath(simdir, only(filter(dir -> split(basename(dir), "dB")[1] == string(snr), readdir(simdir))))
-
 # Define worker function
-function _runsim(simdir, snr, numexp, ti, dt, tf; reportsim=false, loglevel=Logging.Info, withbar=false)
+function _runsim(simdir, snr, numexp, ti, dt, tf, tb; reportsim=false, loglevel=Logging.Info, withbar=false)
     # Check snr path 
     simpath = joinpath(simdir, string(snr)*"dB") 
     isdir(simpath) || mkpath(simpath)
@@ -30,10 +28,9 @@ function _runsim(simdir, snr, numexp, ti, dt, tf; reportsim=false, loglevel=Logg
     η = to_noise_strength(snr)
     n = 4           # Number of nodes 
     d = 3           # Dimensio of nodes 
-    T = 100.        # Bit duration 
     ε = 10.         # Couping strength
     
-    pcm = PCM(high=ε, low=0.01ε, period=T)      # Pulse code modulation.
+    pcm = PCM(high=ε, low=0.01ε, period=tb)      # Pulse code modulation.
 
     E = [       # Connection matrix
         t -> -3*pcm(t)  t -> 3*pcm(t)       t -> -ε     t -> ε;
@@ -49,10 +46,10 @@ function _runsim(simdir, snr, numexp, ti, dt, tf; reportsim=false, loglevel=Logg
     readout(x, u, t) = x        # Readout function of all nodes
 
     netmodel = network([
-        ForcedNoisyLorenzSystem(diffusion=(dx, x, u, t) -> (dx .= η * kron([1 1 0 0], P)), modelkwargs=(noise=noise, noise_rate_prototype=zeros(d, n*d))), 
-        ForcedNoisyLorenzSystem(diffusion=(dx, x, u, t) -> (dx .= η * kron([0 0 1 1], P)), modelkwargs=(noise=noise, noise_rate_prototype=zeros(d, n*d))), 
-        ForcedNoisyLorenzSystem(diffusion=(dx, x, u, t) -> (dx .= η * kron([-1 0 -1 0], P)), modelkwargs=(noise=noise, noise_rate_prototype=zeros(d, n*d))), 
-        ForcedNoisyLorenzSystem(diffusion=(dx, x, u, t) -> (dx .= η * kron([0 -1 0 -1], P)), modelkwargs=(noise=noise, noise_rate_prototype=zeros(d, n*d)))], 
+        ForcedNoisyLorenzSystem(diffusion=(dx, x, u, t) -> (dx .= η * kron([1 1 0 0], P)), modelkwargs=(noise=noise, noise_rate_prototype=zeros(d, n*d)), solverkwargs=(dt=dt/10,), alg=ImplicitEM()), 
+        ForcedNoisyLorenzSystem(diffusion=(dx, x, u, t) -> (dx .= η * kron([0 0 1 1], P)), modelkwargs=(noise=noise, noise_rate_prototype=zeros(d, n*d)), solverkwargs=(dt=dt/10,), alg=ImplicitEM()), 
+        ForcedNoisyLorenzSystem(diffusion=(dx, x, u, t) -> (dx .= η * kron([-1 0 -1 0], P)), modelkwargs=(noise=noise, noise_rate_prototype=zeros(d, n*d)), solverkwargs=(dt=dt/10,), alg=ImplicitEM()), 
+        ForcedNoisyLorenzSystem(diffusion=(dx, x, u, t) -> (dx .= η * kron([0 -1 0 -1], P)), modelkwargs=(noise=noise, noise_rate_prototype=zeros(d, n*d)), solverkwargs=(dt=dt/10,), alg=ImplicitEM())], 
         E, P)   
 
     # Add writer to netmodel 
@@ -73,9 +70,9 @@ function _runsim(simdir, snr, numexp, ti, dt, tf; reportsim=false, loglevel=Logg
     end
 end
 
-function runsim(simdir, snr, ti, dt, tf, numexps; reportsim=false, loglevel=Logging.Info, withbar=false)
+function runsim(simdir, snr, ti, dt, tf, tb, numexps; reportsim=false, loglevel=Logging.Info, withbar=false)
     for numexp in 1 : numexps
-        _runsim(simdir, snr, numexp, ti, dt, tf, reportsim=reportsim, loglevel=loglevel, withbar=withbar)
+        _runsim(simdir, snr, numexp, ti, dt, tf, tb, reportsim=reportsim, loglevel=loglevel, withbar=withbar)
     end
 end
 
