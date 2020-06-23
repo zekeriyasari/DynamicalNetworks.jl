@@ -11,56 +11,60 @@ function parse_commandline_args()
     s = ArgParseSettings()
 
     @add_arg_table! s begin
-        "--simulation-directory", "-o"
+        "--simulation-directory"
             help = "The directory that the simulation output will be written"
             arg_type = String 
             default = tempdir()
-        "--experiment-prefix", "-r"
+        "--experiment-prefix"
             help = "Prefix for the experiment name. A directory with the name EXPERIMENT-PREFIX_YYYYMMDDHHMM will be created."
             arg_type = String 
             default = "Simulation"
-        "--number-of-processors", "-p"
+        "--number-of-processors"
             help = "Number of processors to use"
             arg_type = Int 
             default = length(Sys.cpu_info()) - 3
-        "--number-of-experiments", "-e"
+        "--number-of-experiments"
             help = "Number of processors to use"
             arg_type = Int 
             default = 1
-        "--number-of-bits", "-b"
+        "--number-of-bits"
             help = "Number of bits to generate"
             arg_type = Int 
             default = 5
-        "--minimum-snr", "-m"
+        "--minimum-snr"
             help = "Minimum snr value (dB)"
             arg_type = Int 
             default = 0
-        "--maximum-snr", "-M"
+        "--maximum-snr"
             help = "Maximum snr value (dB)"
             arg_type = Int 
             default = 18
-        "--number-of-snr", "-n"
+        "--number-of-snr"
             help = "Number of snr values"
             arg_type = Int 
             default = 10
-        "--bit-duration", "-d"
+        "--bit-duration"
             help = "Bit duration"
             arg_type = Float64 
             default = 10.
-        "--sampling-period", "-s"
+        "--sampling-period"
             help = "Sampling period"
             arg_type = Float64 
             default = 0.01
-        "--report-simulation", "-k"
+        "--pcm-duty-cycle"
+            help = "Pulse Code Modulation(PCM) duty cycle"
+            arg_type = Float64
+            default = 0.5
+        "--report-simulation"
             help = "Report simulation"
             action = :store_true
-        "--withbar", "-w"
+        "--withbar"
             help = "Run simulation with progress bar and console log."
             action = :store_true
-        "--log-to-file", "-l"
+        "--log-to-file"
             help = "Save simulation runs log to a file."
             action = :store_true
-        "--log-level", "-v"
+        "--log-level"
             arg_type = String 
             default = "info"
     end
@@ -114,6 +118,7 @@ numexps = clargs["number-of-experiments"]
 reportsim = clargs["report-simulation"]
 logtofile = clargs["log-to-file"]
 withbar = clargs["withbar"]
+duty = clargs["pcm-duty-cycle"]
 
 # Code loading  
 @info "Loading code to all processors..."
@@ -124,7 +129,7 @@ withbar = clargs["withbar"]
 @info "Running simulation..."
 @sync @distributed for snr in snr_range
     runsim(
-        simdir, snr, ti, dt, tf, tb, numexps,
+        simdir, snr, ti, dt, tf, tb, duty, numexps,
         reportsim=reportsim,
         loglevel=loglevel,
         withbar=withbar

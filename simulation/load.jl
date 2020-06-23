@@ -16,7 +16,7 @@ using JLD2
 to_noise_strength(snr) = sqrt(10^(snr / 10))
 
 # Define worker function
-function _runsim(simdir, snr, numexp, ti, dt, tf, tb; reportsim=false, loglevel=Logging.Info, withbar=false)
+function _runsim(simdir, snr, numexp, ti, dt, tf, tb, duty; reportsim=false, loglevel=Logging.Info, withbar=false)
     # Check snr path 
     simpath = joinpath(simdir, string(snr)*"dB") 
     isdir(simpath) || mkpath(simpath)
@@ -30,7 +30,7 @@ function _runsim(simdir, snr, numexp, ti, dt, tf, tb; reportsim=false, loglevel=
     d = 3           # Dimensio of nodes 
     ε = 10.         # Couping strength
     
-    pcm = PCM(high=ε, low=0.01ε, period=tb)      # Pulse code modulation.
+    pcm = PCM(high=ε, low=0.01ε, period=tb, duty=duty)      # Pulse code modulation.
 
     E = [       # Connection matrix
         t -> -3*pcm(t)  t -> 3*pcm(t)       t -> -ε     t -> ε;
@@ -70,9 +70,9 @@ function _runsim(simdir, snr, numexp, ti, dt, tf, tb; reportsim=false, loglevel=
     end
 end
 
-function runsim(simdir, snr, ti, dt, tf, tb, numexps; reportsim=false, loglevel=Logging.Info, withbar=false)
+function runsim(simdir, snr, ti, dt, tf, tb, duty, numexps; reportsim=false, loglevel=Logging.Info, withbar=false)
     for numexp in 1 : numexps
-        _runsim(simdir, snr, numexp, ti, dt, tf, tb, reportsim=reportsim, loglevel=loglevel, withbar=withbar)
+        _runsim(simdir, snr, numexp, ti, dt, tf, tb, duty, reportsim=reportsim, loglevel=loglevel, withbar=withbar)
     end
 end
 
