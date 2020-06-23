@@ -16,7 +16,8 @@ using JLD2
 to_noise_strength(snr) = sqrt(10^(snr / 10))
 
 # Define worker function
-function _runsim(simdir, snr, numexp, ti, dt, tf, tb, duty; reportsim=false, loglevel=Logging.Info, withbar=false)
+function _runsim(simdir, snr, numexp, ti, dt, tf, tb, duty; 
+    reportsim=false, logtofile=true, loglevel=Logging.Info, withbar=false)
     # Check snr path 
     simpath = joinpath(simdir, string(snr)*"dB") 
     isdir(simpath) || mkpath(simpath)
@@ -62,7 +63,7 @@ function _runsim(simdir, snr, numexp, ti, dt, tf, tb, duty; reportsim=false, log
 
     # Simulate the netmodel 
     simulate!(netmodel, ti, dt, tf - dt, simdir=simpath, simname=simname, simprefix="", 
-        reportsim=reportsim, loglevel=loglevel, withbar=withbar)
+        reportsim=reportsim, logtofile=logtofile, loglevel=loglevel, withbar=withbar)
 
     # Record generated bits 
     jldopen(joinpath(exppath, "bits.jld2"), "w") do file 
@@ -70,9 +71,11 @@ function _runsim(simdir, snr, numexp, ti, dt, tf, tb, duty; reportsim=false, log
     end
 end
 
-function runsim(simdir, snr, ti, dt, tf, tb, duty, numexps; reportsim=false, loglevel=Logging.Info, withbar=false)
+function runsim(simdir, snr, ti, dt, tf, tb, duty, numexps; 
+    reportsim=false, logtofile=true, loglevel=Logging.Info, withbar=false)
     for numexp in 1 : numexps
-        _runsim(simdir, snr, numexp, ti, dt, tf, tb, duty, reportsim=reportsim, loglevel=loglevel, withbar=withbar)
+        _runsim(simdir, snr, numexp, ti, dt, tf, tb, duty, 
+        reportsim=reportsim, logtofile=logtofile, loglevel=loglevel, withbar=withbar)
     end
 end
 
