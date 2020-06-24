@@ -86,8 +86,7 @@ end
 
 # ----------------------------------------------- Simulate functions ----------------------------------------- #
 
-function simulate(simdir, snr_range, ti, dt, tf, tb, duty, numexps, 
-    reportsim=false, logtofile=true, loglevel=Logging.Info, withbar=false, clargs=nothing) 
+function simulate(clargs) 
 
     # Configure simulation settings 
     ti = 0.
@@ -107,6 +106,12 @@ function simulate(simdir, snr_range, ti, dt, tf, tb, duty, numexps,
     withbar = clargs["withbar"]
     duty = clargs["pcm-duty-cycle"]
 
+    simdir = joinpath(clargs["simulation-directory"], 
+        clargs["experiment-prefix"] * "-" * replace(split(string(now()), ".")[1], ":" => "-"))
+    ispath(simdir) || mkpath(simdir)
+    clargs["simdir"] = simdir
+    snr_range = collect(range(clargs["minimum-snr"], stop=clargs["maximum-snr"], length=clargs["number-of-snr"]))
+
     # Run simulation
     @info "Running simulation..."
     @sync @distributed for snr in snr_range
@@ -123,18 +128,18 @@ function simulate(simdir, snr_range, ti, dt, tf, tb, duty, numexps,
     # Record simulation configuration in a text file.
     @info "Writing simulation configuration text file"
     open(joinpath(simdir, "config.txt"), "w") do io
-    for (arg,val) in clargs
-        write(io, "  $arg  =>  $val\n")
-    end
+        for (arg,val) in clargs
+            write(io, "  $arg  =>  $val\n")
+        end
     end
     @info "Done."
 
     # Record simulation in a data file. 
     @info "Writing simulation configuration data file"
     jldopen(joinpath(simdir, "config.jld2"), "w") do file
-    for (arg, val) in clargs
-        file[arg] =  val
-    end
+        for (arg, val) in clargs
+            file[arg] =  val
+        end
     end
     @info "Done."
 end 
@@ -234,12 +239,11 @@ nw == np - 1 || addprocs(np - nw)
 
 
 # Simulate the system 
-clargs["simulate"]  && simulate(simdir, snr_range, ti, dt, tf, tb, duty, numexps, 
-    reportsim=reportsim, logtofile=logtofile, loglevel=loglevel, withbar=withbar, clargs=clargs)
+clargs["simulate"]  && simulate(clargs)
 
 # Process the simulation files 
-clargs["process"]  && process_sim(simdir)
+clargs["process"]  && process_sim(clargs["simdir"])
 
 # Process the simulation files 
-clargs["ber"]  && ber_sim(simdir)
+clargs["ber"]  && ber_sim(clargs["simdir"])
 

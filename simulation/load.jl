@@ -47,10 +47,10 @@ function _runsim(simdir, snr, numexp, ti, dt, tf, tb, duty;
     readout(x, u, t) = x        # Readout function of all nodes
 
     netmodel = network([
-        ForcedNoisyLorenzSystem(diffusion=(dx, x, u, t) -> (dx .= η * kron([1 1 0 0], P)), modelkwargs=(noise=noise, noise_rate_prototype=zeros(d, n*d)), solverkwargs=(dt=dt/10,), alg=ImplicitEM()), 
-        ForcedNoisyLorenzSystem(diffusion=(dx, x, u, t) -> (dx .= η * kron([0 0 1 1], P)), modelkwargs=(noise=noise, noise_rate_prototype=zeros(d, n*d)), solverkwargs=(dt=dt/10,), alg=ImplicitEM()), 
-        ForcedNoisyLorenzSystem(diffusion=(dx, x, u, t) -> (dx .= η * kron([-1 0 -1 0], P)), modelkwargs=(noise=noise, noise_rate_prototype=zeros(d, n*d)), solverkwargs=(dt=dt/10,), alg=ImplicitEM()), 
-        ForcedNoisyLorenzSystem(diffusion=(dx, x, u, t) -> (dx .= η * kron([0 -1 0 -1], P)), modelkwargs=(noise=noise, noise_rate_prototype=zeros(d, n*d)), solverkwargs=(dt=dt/10,), alg=ImplicitEM())], 
+        ForcedNoisyLorenzSystem(diffusion=(dx, x, u, t) -> (dx .= η * kron([1 1 0 0], P)), modelkwargs=(noise=noise, noise_rate_prototype=zeros(d, n*d)),  alg=ImplicitEM()), 
+        ForcedNoisyLorenzSystem(diffusion=(dx, x, u, t) -> (dx .= η * kron([0 0 1 1], P)), modelkwargs=(noise=noise, noise_rate_prototype=zeros(d, n*d)),  alg=ImplicitEM()), 
+        ForcedNoisyLorenzSystem(diffusion=(dx, x, u, t) -> (dx .= η * kron([-1 0 -1 0], P)), modelkwargs=(noise=noise, noise_rate_prototype=zeros(d, n*d)),  alg=ImplicitEM()), 
+        ForcedNoisyLorenzSystem(diffusion=(dx, x, u, t) -> (dx .= η * kron([0 -1 0 -1], P)), modelkwargs=(noise=noise, noise_rate_prototype=zeros(d, n*d)),  alg=ImplicitEM())], 
         E, P)   
 
     # Add writer to netmodel 
