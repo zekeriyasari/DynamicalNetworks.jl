@@ -7,7 +7,7 @@ dirname(Pkg.project().path) == dev_env_path || Pkg.activate(dev_env_path)
 
 # Load packages 
 using DifferentialEquations 
-using DynamicalNetworks 
+using DynamicalNetworks  
 using LinearAlgebra
 using Logging
 using JLD2
