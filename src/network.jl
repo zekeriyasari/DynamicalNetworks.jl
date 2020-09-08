@@ -1,61 +1,33 @@
-# This file includes network functions. 
+# This file includes to construct network models
 
-function network(components::AbstractVector{<:AbstractDynamicSystem}, E::AbstractMatrix, P::AbstractMatrix)
-    # Extract network dimensions
-    n = size(E, 1) 
-    d = size(P, 1) 
-
-    # Construct model 
-    model = Model() 
-
-    # Construct the components 
-    for (i, component) in enumerate(components)
-        addnode!(model, component, label=Symbol("node$i"))
-    end
-    addnode!(model, Coupler(conmat=E, cplmat=P), label=Symbol("coupler"))
-
-    # Add branches to the model 
-    coupleridx = n + 1
-    for (j, k) in zip(1 : n, map(i -> i : i + d - 1, 1 : d : n * d))
-        addbranch!(model, j => coupleridx, 1 : d => k)
-        addbranch!(model, coupleridx => j, k => 1 : d)
-    end
-
-    # Return the model 
-    model
-end
-
-function network(dynamics::Type{<:AbstractDynamicSystem}, E::AbstractMatrix, P::AbstractMatrix; kwargs...)
-    n = size(E, 1)
-    d = size(P, 1)
-    components = [dynamics(input=Inport(d),output=Outport(d); kwargs...) for i in 1 : n]
-    network(components, E, P)
-end
-
-network(components::AbstractVector{<:AbstractDynamicSystem}, topology::AbstractGraph, P::AbstractMatrix; 
-    weight=1., kwargs...) = network(components,  weight * collect(-laplacian_matrix(topology)), P)
-network(dynamics::Type{<:AbstractDynamicSystem}, topology::AbstractGraph, P::AbstractMatrix; weight=1., kwargs...) = 
-    network(dynamics,  weight * collect(-laplacian_matrix(topology)), P; weight = 1., kwargs...)
-
+export Network, signalflow
 
 """
-    coupling(n::Int, d::Int)
+    $(TYPEDEF)
 
-Returns a couping matrix of size d × d such that nth element of the diagonal is 1.
+A network consisting of dynamical systems. The dynamics of the network evolves by, 
+```math 
+    \\dot{x}_i = f_i(x_i) + \\sum_{j = 1}^{n} \\epsilon_{ij} P x_j \\quad i = 1, \\ldots, n
+```
+where ``x_i`` is the state vector of node ``i``,  ``f_i'' is the individual node dynamics, ``\\epsilon_{ỉj} \\geq 0`` is the coupling strength between the nodes ``i`` and ``j``. ``P = diag(p_1, \\ldots, p_d)`` determines the state variables by which the nodes are coupled. 
+
+# Fields 
+
+    $(TYPEDFIELDS)
 """
-function coupling(n::Int, d::Int)
-    v = zeros(d)
-    v[n] = 1.
-    diagm(v)
+struct Network{T1, T2, T3}
+    nodes::T1
+    E::T2 
+    P::T3
 end
 
 """
-    coupling(n::AbstractVector, d::Int) 
-
-Returns coupling matrix of size d × d such that diagoal elements corresponing to n is 1.
+    $(SIGNATURES)
+    
+Plots signal flow graph. 
 """
-function coupling(n::AbstractVector, d::Int)
-    v = zeros(d)
-    v[n] .= 1.
-    diagm(v)
+function signalflow(net::Network)
+    E = net.E
+    graph = SimpleGraph(E)
+    gplot(graph, nodelabel=1 : size(E, 1))
 end

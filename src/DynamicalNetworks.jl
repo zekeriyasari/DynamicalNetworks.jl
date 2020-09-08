@@ -1,21 +1,15 @@
-
-#= 
-    A simulator for dynamical networks.
-=#
+# Dynamical System Network 
 module DynamicalNetworks
 
 using DocStringExtensions
-using Reexport 
-@reexport using Jusdl
-using LightGraphs 
-using LinearAlgebra
+using DifferentialEquations
+using LightGraphs, GraphPlot 
+using JLD2, FileIO
+using Dates 
 
-# Includes 
-include("pcm.jl")
+include("nodes.jl")
 include("network.jl")
-
-# Exports 
-export PCM, Falling, Rising, switch!
-export network, coupling
+include("simulation.jl")
+include("pcm.jl")
 
 end # module

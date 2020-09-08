@@ -9,7 +9,6 @@ makedocs(;
     repo="https://github.com/zekeriyasari/DynamicalNetworks.jl/blob/{commit}{path}#L{line}",
     sitename="DynamicalNetworks.jl",
     authors="Zekeriya SARI",
-    assets=String[],
 )
 
 deploydocs(;
