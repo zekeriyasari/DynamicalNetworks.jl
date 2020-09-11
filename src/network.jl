@@ -1,6 +1,8 @@
 # This file includes to construct network models
 
-export Network, signalflow
+export AbstractNetwork, ODENetwork, SDENetwork, signalflow
+
+abstract type AbstractNetwork end
 
 """
     $(TYPEDEF)
@@ -15,10 +17,31 @@ where ``x_i`` is the state vector of node ``i``,  ``f_i'' is the individual node
 
     $(TYPEDFIELDS)
 """
-struct Network{T1, T2, T3}
+struct ODENetwork{T1, T2, T3} <: AbstractNetwork
     nodes::T1
     E::T2 
     P::T3
+end
+
+
+"""
+    $(TYPEDEF) 
+
+A network whose dynamics is given by 
+```mat
+dx_i = \\left( f(x_i) + \\sum_{j = 1}^n \\epsilon_{ij} P x_j \\right) dt + \\left( \\sum_{k=1}^l \\eta_k P \\right) dW_k
+```
+where `n` is the number of nodes `l` is the number of edges in the network. ``W_k`` is the Wiener process corresponding to the noise on the edge `k' connecting the nodes `i` and `j`. 
+
+# Fields
+
+    $(TYPEDFIELDS)
+"""
+struct SDENetwork{T1, T2, T3, T4} <: AbstractNetwork 
+    nodes::T1 
+    E::T2 
+    H::T3 
+    P::T4
 end
 
 """
@@ -26,13 +49,13 @@ end
     
 Plots signal flow graph of `net`.
 """
-signalflow(net::Network) = plotgraph(net.E)
+signalflow(net::ODENetwork) = plotgraph(net.E)
 
 """
     $(SIGNATURES) 
 
 Plots signal flow graph of `net` at time `t`.
 """
-signalflow(net::Network, t) =  plotgraph(map(ϵ -> ϵ, net.E))
+signalflow(net::ODENetwork, t) =  plotgraph(map(ϵ -> ϵ, net.E))
 plotgraph(E) = gplot(SimpleGraph(E), nodelabel=1:size(E,1))
 

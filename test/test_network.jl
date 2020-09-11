@@ -7,7 +7,7 @@
     E = [-1 1; 1 -1]
     P = [1 0 0; 0 0 0; 0 0 0]
     nodes = [Lorenz() for i in 1 : n]
-    net = Network(nodes, E, P)
+    net = ODENetwork(nodes, E, P)
 
     # Length
     ti, dt, tf = 0., 0.01, 10.

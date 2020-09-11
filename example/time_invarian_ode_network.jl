@@ -11,7 +11,7 @@ d = 3
 E = ϵ * collect(-laplacian_matrix(star_graph(n))) 
 P = [1 0 0; 0 0 0; 0 0 0]
 nodes = [Lorenz() for i in 1 : n]
-net = Network(nodes, E, P)
+net = ODENetwork(nodes, E, P)
 
 # Simulate network 
 ti, dt, tf = 0., 0.01, 100.

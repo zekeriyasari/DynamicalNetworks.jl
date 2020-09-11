@@ -25,7 +25,7 @@ d = 3       # Dimension of nodes
 E = ϵ * [-1 1; 1 -1]        # Outer coupling matrix
 P = [1 0 0; 0 0 0; 0 0 0]   # Inner couping matrix 
 nodes = [Lorenz() for i in 1 : n]   # Nodes in the network.
-net = Network(nodes, E, P)
+net = ODENetwork(nodes, E, P)
 ```
 
 # SDE Networks 

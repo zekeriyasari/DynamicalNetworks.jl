@@ -1,4 +1,4 @@
-# Dynamical System Network 
+# Dynamical System ODENetwork 
 module DynamicalNetworks
 
 using DocStringExtensions

@@ -18,7 +18,7 @@ P = [1 0 0; 0 0 0; 0 0 0]
 n = size(E, 1) 
 d = size(P, 1)
 nodes = [Lorenz() for i in 1 : n]
-net = Network(nodes, E, P)
+net = ODENetwork(nodes, E, P)
 
 # Simulate network 
 ti, dt, tf = 0., 0.01, nbits * tbit 
