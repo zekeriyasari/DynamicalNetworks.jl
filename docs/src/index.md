@@ -3,6 +3,3 @@
 ```@autodocs
 Modules = [DynamicalNetworks]
 ```
-
-```@index
-```

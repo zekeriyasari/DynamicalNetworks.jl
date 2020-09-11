@@ -24,10 +24,15 @@ end
 """
     $(SIGNATURES)
     
-Plots signal flow graph. 
+Plots signal flow graph of `net`.
 """
-function signalflow(net::Network)
-    E = net.E
-    graph = SimpleGraph(E)
-    gplot(graph, nodelabel=1 : size(E, 1))
-end
+signalflow(net::Network) = plotgraph(net.E)
+
+"""
+    $(SIGNATURES) 
+
+Plots signal flow graph of `net` at time `t`.
+"""
+signalflow(net::Network, t) =  plotgraph(map(ϵ -> ϵ, net.E))
+plotgraph(E) = gplot(SimpleGraph(E), nodelabel=1:size(E,1))
+
