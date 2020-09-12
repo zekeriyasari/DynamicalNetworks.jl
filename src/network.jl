@@ -17,7 +17,7 @@ where ``x_i`` is the state vector of node ``i``,  ``f_i'' is the individual node
 
     $(TYPEDFIELDS)
 """
-struct ODENetwork{T1, T2, T3} <: AbstractNetwork
+mutable struct ODENetwork{T1, T2, T3} <: AbstractNetwork
     nodes::T1
     E::T2 
     P::T3
@@ -37,7 +37,7 @@ where `n` is the number of nodes `l` is the number of edges in the network. ``W_
 
     $(TYPEDFIELDS)
 """
-struct SDENetwork{T1, T2, T3, T4} <: AbstractNetwork 
+mutable struct SDENetwork{T1, T2, T3, T4} <: AbstractNetwork 
     nodes::T1 
     E::T2 
     H::T3 
