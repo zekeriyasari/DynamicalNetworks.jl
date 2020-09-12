@@ -77,7 +77,7 @@ end
 addinput!(dx, x, net, t) = (dx .+= ⊗(net.E, net.P, t) * x)
 ⊗(E, P, t) = eltype(E) <: Number ? kron(E, P) : kron(map(ϵ -> ϵ(t), E), P)
 
-function writedata(simpath, sol::RODESolution)
+function writedata(simpath, sol::DiffEqBase.AbstractRODESolution)
     datafilepath = joinpath(simpath, "data.jld2") 
     jldopen(datafilepath, "w") do file 
         file["sol_t"] = sol.t 
@@ -87,7 +87,7 @@ function writedata(simpath, sol::RODESolution)
     end
 end
 
-function writedata(simpath, sol::ODESolution)
+function writedata(simpath, sol::DiffEqBase.AbstractODESolution)
     datafilepath = joinpath(simpath, "data.jld2") 
     jldopen(datafilepath, "w") do file 
         file["sol_t"] = sol.t 
