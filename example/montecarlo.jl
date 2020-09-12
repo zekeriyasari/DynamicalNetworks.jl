@@ -3,8 +3,23 @@
 using DynamicalNetworks
 
 # Contruct a network 
-E = [-1 1; 1 -1] 
-H = [0 1; -1 0]
+nbits = 10 
+tbit = 50.
+ϵ = 10.
+bits = rand(Bool, nbits)
+u = PCM(bits=bits, period=tbit, high=ϵ)
+E = [
+    PCM(bits=bits, period=tbit, high=-3ϵ) PCM(bits=bits, period=tbit, high=3ϵ) PCM(bits=bits, period=Inf, high=-ϵ) PCM(bits=bits, period=Inf, high=ϵ); 
+    PCM(bits=bits, period=tbit, high=3ϵ) PCM(bits=bits, period=tbit, high=-3ϵ) PCM(bits=bits, period=Inf, high=ϵ) PCM(bits=bits, period=Inf, high=-ϵ); 
+    PCM(bits=bits, period=Inf, high=-ϵ) PCM(bits=bits, period=Inf, high=ϵ) PCM(bits=bits, period=Inf, high=-3ϵ) PCM(bits=bits, period=Inf, high=3ϵ); 
+    PCM(bits=bits, period=Inf, high=ϵ) PCM(bits=bits, period=Inf, high=-ϵ) PCM(bits=bits, period=Inf, high=3ϵ) PCM(bits=bits, period=Inf, high=-3ϵ); 
+] 
+H = [
+    0 0 1 1; 
+    0 0 1 1; 
+    -1 -1 0 0; 
+    -1 -1 0 0
+    ]
 P = [1 0 0; 0 0 0; 0 0 0]
 n = size(E, 1) 
 d = size(P, 1) 
@@ -13,7 +28,8 @@ net = SDENetwork(nodes, E, H, P)
 
 # Run a monte carlo simulation 
 vals = map(η -> η * H, 1 : 10)
-mc = montecarlo(net, :H, vals)
+ti, dt, tf = 0., 0.01, nbits * tbit
+mc = montecarlo(net, :H, vals, ti=ti, dt=dt, tf=tf)
 
 # Print the content of the simulation directory 
 foreach(println, readlines(`tree $(mc.path)`))

@@ -20,26 +20,27 @@ struct MonteCarlo{T1, T2}
     vals::T2
     """Number of trials"""
     ntrials::Int 
+    """Number of cores time of the simulation"""
+    ncores::Int 
     """Initial time of the simulation"""
     ti::Float64 
     """Sampling time of the simulation"""
     dt::Float64
     """Final time of the simulation"""
     tf::Float64
-    """Number of cores time of the simulation"""
-    ncores::Int 
     """Duration of the simulation in seconds"""
     duration::Float64
 end 
-
+MonteCarlo(path, net::T1, varname, vals::T2, ntrials, ncores, ti, dt, tf, duration) where {T1, T2} = 
+    MonteCarlo{T1, T2}(path, net, varname, vals, ntrials, ncores, promote(ti, dt, tf, duration)...)
 
 """
     $(SIGNATURES)
 
 Perform a Monte-Carlo simulation by simulatin `net` for each value of `vals` by setting the `name` fieldname of `net`. `ntrials` is the number of trials. `simdir` is the simulation directory, `simprefix` is the prefix of the simulation directory and simname is the simulation name.
 """
-function montecarlo(net, name::Symbol, vals; ntrials=10, simdir=tempdir(), simprefix="MonteCarlo-", simname=string(now()), 
-    ti=0., dt=0.01, tf=100., ncores=numcores() - 1)
+function montecarlo(net, name::Symbol, vals; ntrials=10, simdir=tempdir(), simprefix="MonteCarlo-", 
+    simname=replace(split(string(now()), ".")[1], ":" => "-"), ti=0., dt=0.01, tf=100., ncores=numcores() - 1)
 
     @info "Started simulation...."
 
@@ -59,6 +60,7 @@ function montecarlo(net, name::Symbol, vals; ntrials=10, simdir=tempdir(), simpr
     # Run simulation 
     tinit = time()
     # NOTE: In using `@showprogress @distributed` implies `@sync `@distributed` 
+    # TODO: #8 Allow the users to enter parameter names, i.e. `Param-` can be given by the user.
     @showprogress @distributed for (idx, val) in collect(enumerate(vals))
         setfield!(net, name, val)
         @distributed for i in 1 : ntrials
@@ -69,7 +71,7 @@ function montecarlo(net, name::Symbol, vals; ntrials=10, simdir=tempdir(), simpr
     @info "Done."
 
     # Construct a Monte-Carlo Object 
-    mc = MonteCarlo(montesimpath, net, name, vals, ntrials, ti, dt, tf, ncores, tfinal - tinit)
+    mc = MonteCarlo(montesimpath, net, name, vals, ntrials, ncores, ti, dt, tf, tfinal - tinit)
 
     # Write MonteCarlo simulation info 
     @info "Writing simulation report...."

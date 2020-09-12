@@ -14,6 +14,7 @@ Base.@kwdef struct PCM{T}
     period::T = 1. 
     duty::T = 0.5
 end 
+PCM(;bits, high=1, low=0, period=1, duty=0.5) = PCM(bits, promote(high, low, period, duty)...)
 
 function (pcm::PCM)(t) 
     n = length(pcm.bits)
