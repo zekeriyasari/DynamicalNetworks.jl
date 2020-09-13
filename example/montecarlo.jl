@@ -9,10 +9,10 @@ tbit = 50.
 bits = rand(Bool, nbits)
 u = PCM(bits=bits, period=tbit, high=ϵ)
 E = [
-    PCM(bits=bits, period=tbit, high=-3ϵ) PCM(bits=bits, period=tbit, high=3ϵ) PCM(bits=bits, period=Inf, high=-ϵ) PCM(bits=bits, period=Inf, high=ϵ); 
-    PCM(bits=bits, period=tbit, high=3ϵ) PCM(bits=bits, period=tbit, high=-3ϵ) PCM(bits=bits, period=Inf, high=ϵ) PCM(bits=bits, period=Inf, high=-ϵ); 
-    PCM(bits=bits, period=Inf, high=-ϵ) PCM(bits=bits, period=Inf, high=ϵ) PCM(bits=bits, period=Inf, high=-3ϵ) PCM(bits=bits, period=Inf, high=3ϵ); 
-    PCM(bits=bits, period=Inf, high=ϵ) PCM(bits=bits, period=Inf, high=-ϵ) PCM(bits=bits, period=Inf, high=3ϵ) PCM(bits=bits, period=Inf, high=-3ϵ); 
+    PCM(bits=bits, period=tbit, high=-3ϵ) PCM(bits=bits, period=tbit, high=3ϵ)  Constant(level=-ϵ)   Constant(level=ϵ); 
+    PCM(bits=bits, period=tbit, high=3ϵ) PCM(bits=bits, period=tbit, high=-3ϵ) Constant(level=ϵ)    Constant(level=-ϵ); 
+    Constant(level=-ϵ)                    Constant(level=ϵ)                    Constant(level=-3ϵ)  Constant(level=3ϵ); 
+    Constant(level=ϵ)                    Constant(level=-ϵ)                   Constant(level=3ϵ)   Constant(level=-3ϵ); 
 ] 
 H = [
     0 0 1 1; 
