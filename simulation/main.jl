@@ -19,6 +19,8 @@ net = getnetwork(clargs)
 
 # STEP:  Run MonteCarlo simulation                                             
 
+# TODO: #11 Compute signal power to compute true snr. 
+
 # Unwrap commandline arguments 
 dt         = getindex(clargs, :dt)
 tbit       = getindex(clargs, :tbit)

@@ -25,7 +25,8 @@ Simulates net from `ti` to `tf with a step size of `dt`.
 function simulate(net::AbstractNetwork, ti=0., dt=0.01, tf=100., solargs=(); solkwargs=NamedTuple(), path=tempdir(), 
     simprefix="Simulation-", simname=replace(split(string(now()), ".")[1], ":" => "-")) 
     # Solve network
-    sol = solve(getprob(net, (ti, tf)), solargs...;  saveat=dt, solkwargs...)
+    sol = solve(getprob(net, (ti, tf)), solargs...; solkwargs...)
+    # sol = solve(getprob(net, (ti, tf)), solargs...;  saveat=dt, solkwargs...)
 
     # Construct simulation directory 
     simpath = joinpath(path, simprefix * simname) 
