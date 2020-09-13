@@ -42,21 +42,22 @@ Perform a Monte-Carlo simulation by simulatin `net` for each value of `vals` by 
 function montecarlo(net, name::Symbol, vals; ti=0., dt=0.01, tf=100., ntrials=10, simdir=tempdir(), 
     simprefix="MonteCarlo-", simname=replace(split(string(now()), ".")[1], ":" => "-"), ncores=numcores() - 1)
 
-    # @info "Started simulation...."
+    @info "Started simulation...."
 
     # Determine monte carlo simulation path 
     montesimpath = joinpath(simdir, simprefix * simname) 
+    isdir(montesimpath) || mkpath(montesimpath)
 
     # Load procs and package 
-    # @info "Addiing processes..."
+    @info "Addiing processes..."
     loadprocs(ncores)
-    # @info "Done."
-    # @info "Loading code to processes..."
+    @info "Done."
+    @info "Loading code to processes..."
     loadpackage()
-    # @info "Done."
+    @info "Done."
 
 
-    # @info "Running MonteCarlo simulation..."
+    @info "Running MonteCarlo simulation..."
     # Run simulation 
     tinit = time()
     # NOTE: In using `@showprogress @distributed` implies `@sync `@distributed` 
@@ -68,22 +69,22 @@ function montecarlo(net, name::Symbol, vals; ti=0., dt=0.01, tf=100., ntrials=10
         end
     end
     tfinal = time()
-    # @info "Done."
+    @info "Done."
 
     # Construct a Monte-Carlo Object 
     mc = MonteCarlo(montesimpath, net, name, vals, ntrials, ncores, ti, dt, tf, tfinal - tinit)
 
     # Write MonteCarlo simulation info 
-    # @info "Writing simulation report...."
-    jldopen(joinpath(montesimpath, "montecarlo.jld2"), "w") do file 
-        file["report"] = mc
+    @info "Writing simulation report...."
+    jldopen(joinpath(montesimpath, "report.jld2"), "w") do file 
+        file["montecarlo"] = mc
     end
-    # @info "Done."
+    @info "Done."
 
-    # @info "Completed simulation."
+    @info "Completed simulation."
 
-    # # Return MonteCarlo simulation.
-    # return mc
+    # Return MonteCarlo simulation.
+    return mc
 end
 
 """
