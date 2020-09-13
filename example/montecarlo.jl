@@ -27,7 +27,7 @@ nodes = [Lorenz() for i  in 1 : n]
 net = SDENetwork(nodes, E, H, P)
 
 # Run a monte carlo simulation 
-vals = map(η -> η * H, 1 : 10)
+vals = map(η -> η * net.H, 1 : 10)
 ti, dt, tf = 0., 0.01, nbits * tbit
 mc = montecarlo(net, :H, vals, ti=ti, dt=dt, tf=tf)
 
