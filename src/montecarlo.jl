@@ -62,7 +62,7 @@ function montecarlo(net, name::Symbol, vals; ti=0., dt=0.01, tf=100., ntrials=10
     tinit = time()
     # NOTE: In using `@showprogress @distributed` implies `@sync `@distributed` 
     # TODO: #8 Allow the users to enter parameter names, i.e. `Param-` can be given by the user.
-    @showprogress @distributed for (idx, val) in collect(enumerate(vals))
+    @sync @distributed for (idx, val) in collect(enumerate(vals))
         setfield!(net, name, val)
         @distributed for i in 1 : ntrials
             simulate(net, ti, dt, tf, path=joinpath(montesimpath, "Param-" * string(idx)), simname="Trial-$i", simprefix="")
