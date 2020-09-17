@@ -10,7 +10,7 @@ function getclargs()
         "--nbits"
             help = "number of bits"
             arg_type = Int
-            default = 10
+            default = 1000
         "--tbit"
             help = "bit duration"
             arg_type = Float64
@@ -43,6 +43,10 @@ function getclargs()
             help = "simulation directory"
             arg_type = String
             default = tempdir()
+        "--maxiters"
+            help = "maximum number of iterations of solver"
+            arg_type = Int
+            default = 1_000_000
         "--simprefix"
             help = "simulation prefix"
             arg_type = String

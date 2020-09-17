@@ -39,8 +39,9 @@ MonteCarlo(path, net::T1, varname, vals::T2, ntrials, ncores, ti, dt, tf, durati
 
 Perform a Monte-Carlo simulation by simulatin `net` for each value of `vals` by setting the `name` fieldname of `net`. `ntrials` is the number of trials. `simdir` is the simulation directory, `simprefix` is the prefix of the simulation directory and simname is the simulation name.
 """
-function montecarlo(net, name::Symbol, vals; ti=0., dt=0.01, tf=100., ntrials=10, simdir=tempdir(), 
-    simprefix="MonteCarlo-", simname=replace(split(string(now()), ".")[1], ":" => "-"), ncores=numcores() - 1)
+function montecarlo(net, name::Symbol, vals, solargs...; ti=0., dt=0.01, tf=100., ntrials=10, simdir=tempdir(), 
+    simprefix="MonteCarlo-", simname=replace(split(string(now()), ".")[1], ":" => "-"), ncores=numcores() - 1, 
+    solkwargs...)
 
     @info "Started simulation...."
 
@@ -65,7 +66,7 @@ function montecarlo(net, name::Symbol, vals; ti=0., dt=0.01, tf=100., ntrials=10
     @sync for (idx, val) in collect(enumerate(vals))
         setfield!(net, name, val)
         @distributed for i in 1 : ntrials
-            simulate(net, ti, dt, tf, path=joinpath(montesimpath, "Param-" * string(idx)), simname="Trial-$i", simprefix="")
+            simulate(net, ti, dt, tf, solargs..., path=joinpath(montesimpath, "Param-" * string(idx)), simname="Trial-$i", simprefix=""; solkwargs...)
         end
     end
     tfinal = time()
