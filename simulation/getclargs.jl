@@ -46,7 +46,7 @@ function getclargs()
         "--maxiters"
             help = "maximum number of iterations of solver"
             arg_type = Int
-            default = 1_000_000
+            default = typemax(Int)
         "--simprefix"
             help = "simulation prefix"
             arg_type = String
