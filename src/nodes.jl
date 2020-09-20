@@ -20,14 +20,16 @@ where ``\\sigma, \\beta, \\rho`` are system parameters.
 
     $(TYPEDFIELDS)
 """
-Base.@kwdef struct Lorenz{T1, T2, T3, T4} <: NodeDynamics
+Base.@kwdef struct Lorenz{T1, T2, T3, T4, T5} <: NodeDynamics
     σ::T1 = 10.
     β::T2 = 8 / 3. 
     ρ::T3 = 28
-    x::T4 = rand(3)
+    γ::T4 = 1. 
+    x::T5 = rand(3)
 end
 function (node::Lorenz)(dx, x)
     dx[1] = node.σ * (x[2] - x[1]) 
     dx[2] = x[1] * (node.ρ - x[3]) - x[2]
     dx[3] = x[1] * x[2] - node.β * x[3]
+    dx .*= node.γ
 end
