@@ -42,7 +42,7 @@ tf = nbits * tbit
 mc = montecarlo(net, :H, vals, ti=0., dt=dt, tf=tf, ntrials=ntrials, simdir=simdir, simprefix=simprefix, ncores=ncores, 
     maxiters=maxiters)
 
-# # Write clargs 
-# jldopen(joinpath(mc.path, "clargs.jld2"), "w") do file 
-#     file["clargs"] = clargs
-# end 
+# Write clargs 
+jldopen(joinpath(mc.path, "clargs.jld2"), "w") do file 
+    file["clargs"] = clargs
+end 
