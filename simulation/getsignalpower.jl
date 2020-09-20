@@ -8,7 +8,7 @@ function getsignalpower(net, clargs)
     dt        = getindex(clargs, :dt)
     ti = 0. 
     tf = nbits * tbit
-    sol = DynamicalNetworks.solvenet(net, ti, dt, tf, solkwargs=(maxiters=maxiters,))
+    sol = DynamicalNetworks.solvenet(net, ti, dt, tf, maxiters=maxiters)
 
     # Read simulation data 
     t = sol.t 
