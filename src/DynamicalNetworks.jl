@@ -8,7 +8,6 @@ using JLD2, FileIO
 using Dates 
 using Distributed
 using Pkg 
-using ProgressMeter
 
 include("nodes.jl")
 include("network.jl")
