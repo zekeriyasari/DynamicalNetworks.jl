@@ -42,7 +42,7 @@ function getclargs()
         "--simdir"
             help = "simulation directory"
             arg_type = String
-            default = tempdir()
+            default = "/data"
         "--maxiters"
             help = "maximum number of iterations of solver"
             arg_type = Int
