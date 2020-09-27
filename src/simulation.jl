@@ -22,9 +22,8 @@ end
 
 Simulates net from `ti` to `tf with a step size of `dt`.
 """
-function simulate(net::AbstractNetwork, ti=0., dt=0.01, tf=100., solargs=(); path=SIMDIR, 
-    simprefix="Simulation-", simname=replace(split(string(now()), ".")[1], ":" => "-"), solkwargs...) 
-    @show net.H
+function simulate(net::AbstractNetwork, ti=0., dt=0.01, tf=100., solargs=(); path=SIMDIR, simprefix="Simulation-", 
+    simname=replace(split(string(now()), ".")[1], ":" => "-"), savenoise=false, solkwargs...) 
     # Solve network
     sol = solvenet(net, ti, dt, tf, solargs...; solkwargs...)
 
@@ -33,7 +32,7 @@ function simulate(net::AbstractNetwork, ti=0., dt=0.01, tf=100., solargs=(); pat
     isdir(simpath) || mkpath(simpath)
 
     # Write simulation data  
-    writedata(simpath, sol)
+    typeof(net) <: SDENetwork ? writedata(simpath, sol, savenoise) : writedata(simpath, sol)
     writelog(simpath, net, ti, dt, tf)
 
     # Return simulation directory 
@@ -83,13 +82,15 @@ end
 addinput!(dx, x, net, t) = (dx .+= ⊗(net.E, net.P, t) * x)
 ⊗(E, P, t) = eltype(E) <: Number ? kron(E, P) : kron(map(ϵ -> ϵ(t), E), P)
 
-function writedata(simpath, sol::DiffEqBase.AbstractRODESolution)
+function writedata(simpath, sol::DiffEqBase.AbstractRODESolution, savenoise::Bool=false)
     datafilepath = joinpath(simpath, "data.jld2") 
     jldopen(datafilepath, "w") do file 
         file["sol_t"] = sol.t 
         file["sol_x"] = sol.u 
-        file["noise_t"] = sol.W.t 
-        file["noise_x"] = sol.W.u 
+        if savenoise
+            file["noise_t"] = sol.W.t 
+            file["noise_x"] = sol.W.u
+        end
     end
 end
 

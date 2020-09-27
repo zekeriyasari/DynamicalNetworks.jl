@@ -41,7 +41,7 @@ Perform a Monte-Carlo simulation by simulatin `net` for each value of `vals` by 
 """
 function montecarlo(net, name::Symbol, vals, solargs...; ti=0., dt=0.01, tf=100., ntrials=10, simdir=SIMDIR, 
     simprefix="MonteCarlo-", simname=replace(split(string(now()), ".")[1], ":" => "-"), ncores=numcores() - 1, 
-    solkwargs...)
+    savenoise=false, solkwargs...)
 
     @info "Started simulation...."
 
@@ -66,7 +66,7 @@ function montecarlo(net, name::Symbol, vals, solargs...; ti=0., dt=0.01, tf=100.
     @sync for (idx, val) in enumerate(vals)
         @distributed for i in 1 : ntrials
             setfield!(net, name, val)
-            simulate(net, ti, dt, tf, solargs..., path=joinpath(montesimpath, "Param-" * string(idx)), simname="Trial-$i", simprefix=""; solkwargs...)
+            simulate(net, ti, dt, tf, solargs..., path=joinpath(montesimpath, "Param-" * string(idx)), simname="Trial-$i", simprefix="", savenoise=savenoise; solkwargs...)
         end
     end
     tfinal = time()

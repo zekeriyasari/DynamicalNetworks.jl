@@ -11,7 +11,7 @@ function getclargs()
         "--nbits"
             help = "number of bits"
             arg_type = Int
-            default = 1000
+            default = 10
         "--tbit"
             help = "bit duration"
             arg_type = Float64
@@ -60,6 +60,9 @@ function getclargs()
             help = "simulation prefix"
             arg_type = String
             default = "MonteCarlo-"
+        "--savenoise"
+            help = "if true noise is saved in data files"
+            action = :store_true
     end
 
     return parse_args(settings)
