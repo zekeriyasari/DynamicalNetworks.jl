@@ -22,8 +22,9 @@ end
 
 Simulates net from `ti` to `tf with a step size of `dt`.
 """
-function simulate(net::AbstractNetwork, ti=0., dt=0.01, tf=100., solargs=(); path=tempdir(), 
+function simulate(net::AbstractNetwork, ti=0., dt=0.01, tf=100., solargs=(); path=SIMDIR, 
     simprefix="Simulation-", simname=replace(split(string(now()), ".")[1], ":" => "-"), solkwargs...) 
+    @show net.H
     # Solve network
     sol = solvenet(net, ti, dt, tf, solargs...; solkwargs...)
 

@@ -10,6 +10,8 @@ using Distributed
 using Pkg 
 using LinearAlgebra
 
+const SIMDIR = "/data"
+
 include("nodes.jl")
 include("network.jl")
 include("simulation.jl")

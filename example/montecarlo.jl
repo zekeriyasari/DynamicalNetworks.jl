@@ -1,12 +1,15 @@
+
 using DynamicalNetworks
 using Plots 
 
-# Simulation setttings 
-nbits = 5 
+# Simulation settings 
+nbits = 10 
 tbit = 50. 
 ϵ = 10. 
 γ = 1. 
-η = 10. 
+η = 1. 
+
+# Construct network 
 bits = rand(Bool, nbits) 
 E = reshape([
     PCM(bits=bits, period=tbit, high=-3ϵ),
@@ -41,17 +44,22 @@ dimnodes = size(P, 1)
 nodes = [Lorenz(γ=γ) for n in 1 : numnodes]
 net = SDENetwork(nodes, E, H, P)
 
-# Solve network 
-ti, dt, tf = 0., 0.01, nbits * tbit
-sol = solvenet(net, ti, dt, tf, saveat=dt)
+# Simulate network 
+ti = 0. 
+dt = 0.001
+tf = nbits * tbit
 
-# Plots the solution 
-t, x = sol.t, sol.u 
-plt = plot(layout=(5,1), size=(750, 800))
-plot!(getindex.(x, 7), getindex.(x, 8), subplot=1)
-plot!(t, abs.(getindex.(x, 1) - getindex.(x, 4)), subplot=2)
-plot!(t, abs.(getindex.(x, 4) - getindex.(x, 7)), subplot=3)
-plot!(t, abs.(getindex.(x, 7) - getindex.(x, 10)), subplot=4)
-plot!(t, net.E[1,2].(t), subplot=5)
-foreach(i -> vline!(collect(ti : tbit : tf), ls=:dash, subplot=i), 2 : 5)
-display(plt)
+# Calculate signal power 
+sol = solvenet(net, ti, dt, tf, maxiters=typemax(Int))
+tv = collect(ti : dt : tf) 
+x = sol.(tv) 
+s = abs.(getindex.(x, 4) - getindex.(x, 7))
+N = length(s) - 1 
+power = sum(s[1 : N].^2) / N 
+
+# Run monte carlo simulation 
+snrtostd(snr, power=power) = sqrt(power / (10^(snr / 10)))
+name = :H
+valrange = map(snr -> net.H * snrtostd(snr), 0 : 2 : 18)
+mc = montecarlo(net, name, valrange, ti=ti, dt=dt, tf=tf, simdir="/data")
+
