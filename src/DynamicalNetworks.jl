@@ -8,6 +8,7 @@ using JLD2, FileIO
 using Dates 
 using Distributed
 using Pkg 
+using LinearAlgebra
 
 include("nodes.jl")
 include("network.jl")

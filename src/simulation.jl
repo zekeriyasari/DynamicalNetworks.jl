@@ -1,6 +1,6 @@
 # This file includes the tools for network simulation 
 
-export Simulation, simulate, readsim
+export Simulation, simulate, readsim, solvenet, getprob
 
 """ 
     $(TYPEDEF)
@@ -61,12 +61,18 @@ function getprob(net::SDENetwork, tspan::Tuple)
         addinput!(dx, x, net, t)
     end
     function netdiffusion(dx, x, net, t)
-        dx .= ⊗(net.H, net.P, t)
+        val =  ⊗(net.H, net.P, t)
+        dx .= val
     end
     x0 = vcat([vcat(node.x) for node in net.nodes]...)
-    n = length(x0)
-    SDEProblem(netdrift, netdiffusion, x0, tspan, net, noise_rate_prototype=zeros(n, n))
+    n = size(net.E, 1)
+    d = size(net.P, 1) 
+    l = size(net.H, 2)
+    SDEProblem(netdrift, netdiffusion, x0, tspan, net, noise_rate_prototype=zeros(n*d, l*d))
 end
+
+# get_noise_length(mat::AbstractMatrix) = length(findall(!iszero, UpperTriangular(mat)))
+# get_noise_length(vec::AbstractVector) = length(vec) == 2 ? 1 : throw(DimensionMismatch("$vec must be of length 2"))
 
 function kernel!(dx, x, net, t)
     n = size(net.E, 1) 
