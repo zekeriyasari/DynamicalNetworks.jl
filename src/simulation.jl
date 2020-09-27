@@ -71,9 +71,6 @@ function getprob(net::SDENetwork, tspan::Tuple)
     SDEProblem(netdrift, netdiffusion, x0, tspan, net, noise_rate_prototype=zeros(n*d, l*d))
 end
 
-# get_noise_length(mat::AbstractMatrix) = length(findall(!iszero, UpperTriangular(mat)))
-# get_noise_length(vec::AbstractVector) = length(vec) == 2 ? 1 : throw(DimensionMismatch("$vec must be of length 2"))
-
 function kernel!(dx, x, net, t)
     n = size(net.E, 1) 
     d = size(net.P, 1) 

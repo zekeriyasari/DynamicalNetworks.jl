@@ -3,31 +3,31 @@ using Plots
 
 # Simulation setttings 
 nbits = 5 
-tbit = 100. 
+tbit = 50. 
 ϵ = 10. 
-η = 20. 
 γ = 1. 
+η = 5. 
 bits = rand(Bool, nbits) 
 E = reshape([
     PCM(bits=bits, period=tbit, high=-3ϵ),
     PCM(bits=bits, period=tbit, high=3ϵ),
-    PCM(bits=bits, period=tbit, high=-ϵ),
-    PCM(bits=bits, period=tbit, high=ϵ),
+    Constant(level=-ϵ),
+    Constant(level=ϵ),
 
     PCM(bits=bits, period=tbit, high=3ϵ),
     PCM(bits=bits, period=tbit, high=-3ϵ),
-    PCM(bits=bits, period=tbit, high=ϵ),
-    PCM(bits=bits, period=tbit, high=-ϵ),
+    Constant(level=ϵ),
+    Constant(level=-ϵ),
     
-    PCM(bits=bits, period=tbit, high=-ϵ),
-    PCM(bits=bits, period=tbit, high=ϵ),
-    PCM(bits=bits, period=tbit, high=-3ϵ),
-    PCM(bits=bits, period=tbit, high=3ϵ),
+    Constant(level=-ϵ),
+    Constant(level=ϵ),
+    Constant(level=-3ϵ),
+    Constant(level=3ϵ),
 
-    PCM(bits=bits, period=tbit, high=ϵ),
-    PCM(bits=bits, period=tbit, high=-ϵ),
-    PCM(bits=bits, period=tbit, high=3ϵ),
-    PCM(bits=bits, period=tbit, high=-3ϵ),
+    Constant(level=ϵ),
+    Constant(level=-ϵ),
+    Constant(level=3ϵ),
+    Constant(level=-3ϵ),
     ], 4, 4)
 P = [1 0 0; 0 0 0; 0 0 0]
 H = η * [
@@ -47,7 +47,7 @@ sol = solvenet(net, ti, dt, tf, saveat=dt)
 
 # Plots the solution 
 t, x = sol.t, sol.u 
-plt = plot(layout=(5,1), size=(700, 800))
+plt = plot(layout=(5,1), size=(750, 800))
 plot!(getindex.(x, 7), getindex.(x, 8), subplot=1)
 plot!(t, abs.(getindex.(x, 1) - getindex.(x, 4)), subplot=2)
 plot!(t, abs.(getindex.(x, 4) - getindex.(x, 7)), subplot=3)
