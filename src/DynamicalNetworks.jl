@@ -17,6 +17,5 @@ include("network.jl")
 include("simulation.jl")
 include("pcm.jl")
 include("montecarlo.jl")
-include("Prototypes.jl")
 
 end # module

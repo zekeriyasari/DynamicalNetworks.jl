@@ -121,7 +121,7 @@ function readsim(sim::Simulation)
     log = load(joinpath(sim.path, "log.jld2"))
     data = load(joinpath(sim.path, "data.jld2"))
     net = log["net"] 
-    if net isa SDENetwork
+    if haskey(data, "noise_t") && haskey(data, "noise_x")
         data["sol_t"], data["sol_x"], data["noise_t"], data["noise_x"]
     else
         data["sol_t"], data["sol_x"]
