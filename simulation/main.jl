@@ -32,3 +32,4 @@ name = :H
 net.H ./= maximum(net.H) # rescale network noise matrix 
 valrange = map(snr -> net.H * snrtostd(snr), 0 : 2 : 18)
 mc = montecarlo(net, name, valrange, ti=ti, dt=dt, tf=tf, simdir=clargs["simdir"], maxiters=clargs["maxiters"], saveat=dt)
+mc.path

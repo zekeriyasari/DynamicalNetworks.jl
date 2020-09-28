@@ -1,6 +1,19 @@
 using DynamicalNetworks 
 using FileIO, JLD2 
 using Statistics
+using ArgParse
+
+function get_commandline_arguments()
+    settings = ArgParseSettings()
+
+    @add_arg_table! settings begin
+        "simdir"
+            help = "path of the directory to be processed"
+            required = true
+    end
+
+    return parse_args(settings)
+end
 
 function process_montecarlo(path) 
     mc = load(joinpath(path, "report.jld2"))["montecarlo"]
@@ -73,3 +86,6 @@ function writeber(path, berval)
         file["ber"] = berval
     end
 end
+
+commandline_arguments = get_commandline_arguments()
+process_montecarlo(commandline_arguments["simdir"])
