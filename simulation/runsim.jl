@@ -15,16 +15,19 @@ function runsim(clargs)
     maxiters   = clargs["maxiters"]
     ntrials    = clargs["ntrials"]
     ncores     = clargs["ncores"]
+    loglevel   = clargs["loglevel"]
 
-    tinit = time()
-    @info "Started simulation with settings" clargs
-
-    # Determine monte carlo simulation path 
-    @info "Constructing simulation directories..."
+    # Construct monte carlo simulation path 
     simname = replace(split(string(now()), ".")[1], ":" => "-")
     montesimpath = joinpath(simdir, simprefix * simname) 
     isdir(montesimpath) || mkpath(montesimpath)
-    @info "Done."
+
+    # Set the logger
+    logger = setlogger(montesimpath, loglevel)
+
+    # Start simulation
+    tinit = time()
+    @info "Started simulation with settings" clargs
 
     # Construct network 
     @info "Constructing network..."
@@ -55,6 +58,9 @@ function runsim(clargs)
     @info "Writing simulation report..."
     writereport(montesimpath, clargs)
     @info "Done"
+    
+    # Close logger
+    close(logger.stream)
 end
 
 function runparallel(net, snrrange, ntrials, ti, dt, tf, power, montesimpath, savenoise, maxiters, ncores)
