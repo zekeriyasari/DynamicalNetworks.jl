@@ -58,8 +58,8 @@ N = length(s) - 1
 power = sum(s[1 : N].^2) / N 
 
 # Run monte carlo simulation 
-snrtostd(snr, power=power) = sqrt(power / (10^(snr / 10)))
+snr_to_std(snr, power=power) = sqrt(power / (10^(snr / 10)))
 name = :H
-valrange = map(snr -> net.H * snrtostd(snr), 0 : 2 : 18)
+valrange = map(snr -> net.H * snr_to_std(snr), 0 : 2 : 18)
 mc = montecarlo(net, name, valrange, ti=ti, dt=dt, tf=tf, simdir="/data")
 

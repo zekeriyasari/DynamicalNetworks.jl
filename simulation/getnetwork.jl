@@ -1,7 +1,13 @@
 
+function getnetwork(clargs)
+    # Extract parameters 
+    nbits = clargs["nbits"]
+    tbit  = clargs["tbit"]
+    ϵ     = clargs["coupling-strength"]
+    γ     = clargs["time-scaling"]
 
-function getnetwork(nbits, tbit, ϵ, η, γ)
-    bits = rand(Bool, nbits) 
+    # Construct network 
+    bits  = rand(Bool, nbits) 
     E = reshape([
         PCM(bits=bits, period=tbit, high=-3ϵ),
         PCM(bits=bits, period=tbit, high=3ϵ),
@@ -24,11 +30,11 @@ function getnetwork(nbits, tbit, ϵ, η, γ)
         Constant(level=-3ϵ),
         ], 4, 4)
     P = [1 0 0; 0 0 0; 0 0 0]
-    H = η * [
+    H = [
          1  1  0  0;
          0  0  1  1;
         -1  0 -1  0;
-         0 -1  0 -1;
+         0 -1  0 -1.;
         ]
     numnodes = size(E, 1) 
     dimnodes = size(P, 1) 
