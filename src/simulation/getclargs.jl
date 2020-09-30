@@ -1,3 +1,4 @@
+using ArgParse
 
 function getclargs()
     settings = ArgParseSettings()
@@ -6,7 +7,7 @@ function getclargs()
         "--ncores"
             help = "number of cores"
             arg_type = Int 
-            default = numcores() - 2
+            default = length(Sys.cpu_info()) - 1
         "--nbits"
             help = "number of bits"
             arg_type = Int

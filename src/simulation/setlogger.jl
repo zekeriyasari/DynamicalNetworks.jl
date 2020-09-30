@@ -1,3 +1,5 @@
+using Logging 
+using LoggingExtras
 
 function setlogger(path, level)
     filepath = joinpath(path, "simlog.log")

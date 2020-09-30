@@ -39,6 +39,6 @@ function getnetwork(clargs)
     numnodes = size(E, 1) 
     dimnodes = size(P, 1) 
     nodes = [Lorenz(γ=γ) for n in 1 : numnodes]
-    SDENetwork(nodes, E, H, P)
+    Network(nodes, E, H, P)
 end
 

@@ -1,0 +1,86 @@
+using Distributed
+
+# Include files 
+include(joinpath(@__DIR__, "network.jl"))
+include(joinpath(@__DIR__, "setlogger.jl"))
+include(joinpath(@__DIR__, "getclargs.jl"))
+include(joinpath(@__DIR__, "getnetwork.jl"))
+include(joinpath(@__DIR__, "getpower.jl"))
+include(joinpath(@__DIR__, "runsequential.jl"))
+include(joinpath(@__DIR__, "runparallel.jl"))
+include(joinpath(@__DIR__, "writedata.jl"))
+include(joinpath(@__DIR__, "writebits.jl"))
+include(joinpath(@__DIR__, "writesimreport.jl"))
+
+# Read simulation settings
+clargs = getclargs()
+clargs["sequential"] = false
+clargs["nbits"] = 100
+
+# Extract simulation parameters 
+simdir     = clargs["simdir"]
+simprefix  = clargs["simprefix"]
+minsnr     = clargs["minsnr"]
+maxsnr     = clargs["maxsnr"]
+stepsnr    = clargs["stepsnr"]
+sequential = clargs["sequential"] 
+dt         = clargs["dt"]
+nbits      = clargs["nbits"]
+tbit       = clargs["tbit"]
+savenoise  = clargs["savenoise"]
+maxiters   = clargs["maxiters"]
+ntrials    = clargs["ntrials"]
+ncores     = clargs["ncores"]
+loglevel   = clargs["loglevel"]
+
+# Construct simulation path 
+simpath = joinpath(simdir, simprefix * string(Dates.format(now(), "yy-mm-dd-HH-MM-SS")))
+isdir(simpath) || mkpath(simpath)
+
+# Set the logger
+logger = setlogger(simpath, loglevel)
+
+# Start simulation
+tinit = time()
+@info "Started simulation with settings" clargs
+
+# Construct network 
+@info "Constructing network..."
+net = getnetwork(clargs)
+@info "Done."
+
+# Computer signal power 
+@info "Computing signal power..."
+power = getpower(net, clargs, maxiters=maxiters, saveat=dt)
+@info "Done."
+
+# Simulation time settings
+ti = 0. 
+tf = nbits * tbit
+
+# Determine snr range 
+@info "Running simulation..."
+if sequential
+    runsequential(net, minsnr, stepsnr, maxsnr, ntrials, ti, dt, tf, power, simpath, savenoise, maxiters)
+else
+    na = length(Sys.cpu_info()) - 1 - nprocs()
+    ncores ≤ na ? addprocs(ncores) : addprocs(na)
+    @everywhere begin
+        using Pkg 
+        dev_env_path = joinpath(Pkg.envdir(), "dev-env")
+        dirname(Pkg.project().path) == dev_env_path || Pkg.activate(dev_env_path) 
+        include(joinpath(@__DIR__, "network.jl"))
+        include(joinpath(@__DIR__, "writedata.jl"))
+        include(joinpath(@__DIR__, "writebits.jl"))
+    end
+    runparallel(net, minsnr, stepsnr, maxsnr, ntrials, ti, dt, tf, power, simpath, savenoise, maxiters, ncores)
+end
+@info "Done."
+tfinal = time()
+clargs["duration"] = tfinal - tinit
+
+# Write simulation report.
+@info "Writing simulation report..."
+writesimreport(simpath, clargs)
+@info "Done"
+

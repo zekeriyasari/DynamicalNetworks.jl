@@ -8,7 +8,7 @@ function getpower(net, clargs, solargs...; solkwargs...)
     # Solve network 
     netc = deepcopy(net)
     netc.H .= 0. 
-    sol = solvenet(netc, ti, dt, tf, solargs...; solkwargs...)
+    sol = solvenet(netc, (ti, tf), solargs...; solkwargs...)
 
     # Sample the solution with a samling period of dt
     t = collect(ti : dt : tf - dt) 
