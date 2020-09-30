@@ -10,7 +10,7 @@ function getclargs()
         "--nbits"
             help = "number of bits"
             arg_type = Int
-            default = 10
+            default = 1000
         "--tbit"
             help = "bit duration"
             arg_type = Float64

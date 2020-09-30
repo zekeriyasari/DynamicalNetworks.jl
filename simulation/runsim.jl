@@ -36,7 +36,7 @@ function runsim(clargs)
 
     # Computer signal power 
     @info "Computing signal power..."
-    power = getpower(net, clargs)
+    power = getpower(net, clargs, maxiters=maxiters)
     @info "Done."
 
     # Simulation time settings
