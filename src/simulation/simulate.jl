@@ -8,14 +8,13 @@ include(joinpath(@__DIR__, "getnetwork.jl"))
 include(joinpath(@__DIR__, "getpower.jl"))
 include(joinpath(@__DIR__, "runsequential.jl"))
 include(joinpath(@__DIR__, "runparallel.jl"))
+include(joinpath(@__DIR__, "runthreaded.jl"))
 include(joinpath(@__DIR__, "writedata.jl"))
 include(joinpath(@__DIR__, "writebits.jl"))
 include(joinpath(@__DIR__, "writesimreport.jl"))
 
 # Read simulation settings
 clargs = getclargs()
-clargs["sequential"] = false
-clargs["nbits"] = 100
 
 # Extract simulation parameters 
 simdir     = clargs["simdir"]
@@ -23,7 +22,7 @@ simprefix  = clargs["simprefix"]
 minsnr     = clargs["minsnr"]
 maxsnr     = clargs["maxsnr"]
 stepsnr    = clargs["stepsnr"]
-sequential = clargs["sequential"] 
+mode       = clargs["mode"] 
 dt         = clargs["dt"]
 nbits      = clargs["nbits"]
 tbit       = clargs["tbit"]
@@ -60,9 +59,11 @@ tf = nbits * tbit
 
 # Determine snr range 
 @info "Running simulation..."
-if sequential
+if mode == "sequential"
     runsequential(net, minsnr, stepsnr, maxsnr, ntrials, ti, dt, tf, power, simpath, savenoise, maxiters)
-else
+elseif mode == "threaded"
+    runthreaded(net, minsnr, stepsnr, maxsnr, ntrials, ti, dt, tf, power, simpath, savenoise, maxiters)
+elseif mode == "distributed"
     na = length(Sys.cpu_info()) - 1 - nprocs()
     ncores ≤ na ? addprocs(ncores) : addprocs(na)
     @everywhere begin

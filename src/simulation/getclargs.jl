@@ -19,7 +19,7 @@ function getclargs()
         "--ntrials"
             help = "number of trials"
             arg_type = Int
-            default = 10
+            default = 16
         "--coupling-strength"
             help = "coupling strength between the nodes"
             arg_type = Float64
@@ -39,7 +39,7 @@ function getclargs()
         "--maxsnr"
             help = "maximum snr level"
             arg_type = Int
-            default = 18
+            default = 4
         "--stepsnr"
             help = "number of snr level"
             arg_type = Int
@@ -59,9 +59,10 @@ function getclargs()
         "--savenoise"
             help = "if true noise is saved in data files"
             action = :store_true
-        "--sequential"
-            help = "if true simulation is ran sequentially"
-            action = :store_true
+        "--mode"
+            help = "if true simulation is ran sequentially, distributed and threaded"
+            arg_type = String
+            default = "threaded"
         "--loglevel"
             help = "logging level"
             arg_type = String
