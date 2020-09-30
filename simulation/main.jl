@@ -3,6 +3,7 @@ using DynamicalNetworks
 using ArgParse
 using Dates 
 using Logging, LoggingExtras
+using ProgressMeter
 
 # Include functions 
 include(joinpath(@__DIR__, "setlogger.jl"))

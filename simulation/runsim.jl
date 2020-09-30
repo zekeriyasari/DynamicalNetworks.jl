@@ -67,8 +67,8 @@ function runparallel(net, snrrange, ntrials, ti, dt, tf, power, montesimpath, sa
     loadprocs(ncores) 
     loadpackage()
     H0 = copy(net.H)
-    @sync for snr in snrrange
-        @distributed for i in 1 : ntrials
+    @showprogress for snr in snrrange
+        @sync @distributed for i in 1 : ntrials
             net.H = H0 * snr_to_std(snr, power)
             worker(net, ti, dt, tf, path=joinpath(montesimpath, "$snr-dB"), simname="Trial-$i", simprefix="", 
                 savenoise=savenoise, maxiters=maxiters)
@@ -78,10 +78,12 @@ end
 
 function runsequential(net, snrrange, ntrials, ti, dt, tf, power, montesimpath, savenoise, maxiters)
     include(joinpath(@__DIR__, "loadprocs.jl"))
-    for snr in snrrange, i in 1 : ntrials
-        net.H .*= snr_to_std(snr, power)
-        worker(net, ti, dt, tf, path=joinpath(montesimpath, "$idx-dB"), simname="Trial-$i", simprefix="",     
-            savenoise=savenoise, maxiters=maxiters)
+    @showprogress for snr in snrrange
+        for i in 1 : ntrials
+            net.H .*= snr_to_std(snr, power)
+            worker(net, ti, dt, tf, path=joinpath(montesimpath, "$idx-dB"), simname="Trial-$i", simprefix="",     
+                savenoise=savenoise, maxiters=maxiters)
+        end
     end
 end
 
