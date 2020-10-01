@@ -68,4 +68,3 @@ nprobs = 1
 ntrials = 7
 probs = [SDEProblem(drift!, diffusion!, rand(12), (0., 50000.)) for i in 1 : nprobs]
 pmapped(probs, ntrials)
-

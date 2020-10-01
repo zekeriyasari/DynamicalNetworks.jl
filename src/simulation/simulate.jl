@@ -88,7 +88,7 @@ elseif mode == "pmap"
         include(joinpath(@__DIR__, "writedata.jl"))
         include(joinpath(@__DIR__, "writebits.jl"))
     end
-    runpmap(net, minsnr, stepsnr, maxsnr, ntrials, ti, dt, tf, power, simpath, savenoise, maxiters, ncores)
+    runpmap(net, minsnr, stepsnr, maxsnr, ntrials, ti, dt, tf, power, simpath, savenoise, maxiters)
 end
 @info "Done."
 tfinal = time()

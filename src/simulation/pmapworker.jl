@@ -1,5 +1,5 @@
 
-function pmapworker(i, net, snr, snrpath, ti, dt, tf, power, simpath, savenoise, maxiters)
+function pmapworker(i, net, snr, snrpath, ti, dt, tf, power, H0, simpath, savenoise, maxiters)
     net.H = sqrt(power / (10^(snr / 10))) * H0
     sol = solvenet(net, (ti, tf), maxiters=maxiters, saveat=dt)
     @show (snr, i, sol.retcode)
