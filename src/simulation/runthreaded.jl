@@ -9,7 +9,7 @@ function runthreaded(net, minsnr, stepsnr, maxsnr, ntrials, ti, dt, tf, power, s
             sol = solvenet(net, (ti, tf), maxiters=maxiters, saveat=dt)
             @show (snr, i, sol.retcode)
             trialpath = joinpath(snrpath, "Trial-$i")
-            # writedata(trialpath, sol, savenoise=savenoise)
+            writedata(trialpath, sol, savenoise=savenoise)
             writebits(trialpath, net.E[1,1].bits)
         end
     end

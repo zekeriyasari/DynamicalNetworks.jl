@@ -1,6 +1,6 @@
 using ProgressMeter
 
-function runparallel(net, minsnr, stepsnr, maxsnr, ntrials, ti, dt, tf, power, simpath, savenoise, maxiters, ncores)
+function rundistributed(net, minsnr, stepsnr, maxsnr, ntrials, ti, dt, tf, power, simpath, savenoise, maxiters)
     H0 = copy(net.H)
     @showprogress for snr in minsnr : stepsnr : maxsnr 
         snrpath = joinpath(simpath, "$snr-dB")
