@@ -26,7 +26,7 @@ function process_montecarlo(path)
     end
     @save joinpath(path, "snrber.jld2") snrber
     open(joinpath(path, "snrber.txt"), "w") do file 
-        for (k, v) in snrber
+        for (k, v) in sort(collect(snrber), by=x->x[1])
             write(file, "$k = $v\n")
         end
     end

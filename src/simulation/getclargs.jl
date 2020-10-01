@@ -39,7 +39,7 @@ function getclargs()
         "--maxsnr"
             help = "maximum snr level"
             arg_type = Int
-            default = 4
+            default = 18
         "--stepsnr"
             help = "number of snr level"
             arg_type = Int
