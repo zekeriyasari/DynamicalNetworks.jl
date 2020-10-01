@@ -1,7 +1,7 @@
-using DynamicalNetworks 
 using FileIO, JLD2 
 using Statistics
 using ArgParse
+using Statistics
 
 function get_commandline_arguments()
     settings = ArgParseSettings()
@@ -16,38 +16,59 @@ function get_commandline_arguments()
 end
 
 function process_montecarlo(path) 
-    mc = load(joinpath(path, "report.jld2"))["montecarlo"]
-    for dname in readdir(mc.path, join=true) 
+    report = load(joinpath(path, "report.jld2"))
+    snrber = Dict{String, Float64}() 
+    for dname in readdir(path, join=true) 
         if isdir(dname) 
-            process_parameter(dname, mc)
+            avgberval = process_snr(dname, report)
+            snrber[basename(dname)] = avgberval
         end
     end
+    @save joinpath(path, "snrber.jld2") snrber
+    open(joinpath(path, "snrber.txt"), "w") do file 
+        for (k, v) in snrber
+            write(file, "$k = $v\n")
+        end
+    end
+    snrber
 end 
 
-
-function process_parameter(path, mc)
-    for dname in readdir(path, join=true)
+function process_snr(path, report)
+    bervals = map(readdir(path, join=true)) do dname 
         if isdir(dname)
-            process_trial(dname, mc)
+            process_trial(dname, report)
         end
     end
+    @show bervals
+    avgberval = mean(bervals)
+    @save joinpath(path, "avgberval.jld2") avgberval
+    open(joinpath(path, "avgberval.txt"), "w") do file 
+        write(file, "avgberval = $avgberval")
+    end
+    avgberval
 end
 
 
-function process_trial(path, mc)
+function process_trial(path, report)
     t, x = readdata(path)
     err = geterror(x)
-    sentbits = get_sent_bits(mc)
-    spb = get_samples_per_bit(mc, sentbits)
+    sentbits = get_sent_bits(path)
+    spb = get_samples_per_bit(report)
     extbits = extractbits(err, spb)
-    write_sent_bits(path, sentbits)
     write_extracted_bits(path, extbits)
-    writeber(path, ber(extbits, sentbits))
+    berval = ber(extbits, sentbits)
+    writeber(path, berval)
+    berval
 end
 
-get_sent_bits(mc) = mc.net.E[1, 1].bits
+function get_sent_bits(path)
+    @load joinpath(path, "sentbits.jld2") sentbits 
+    sentbits
+end
 
-get_samples_per_bit(mc, sentbits) = floor(Int, mc.tf / length(sentbits) / mc.dt)
+function get_samples_per_bit(report)
+    floor(Int, report["tbit"] / report["dt"])
+end
 
 function readdata(path)
     data = load(joinpath(path, "data.jld2"))
@@ -87,5 +108,5 @@ function writeber(path, berval)
     end
 end
 
-commandline_arguments = get_commandline_arguments()
-process_montecarlo(commandline_arguments["simdir"])
+# commandline_arguments = get_commandline_arguments()
+# process_montecarlo(commandline_arguments["simdir"])
