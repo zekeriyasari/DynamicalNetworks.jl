@@ -108,5 +108,5 @@ function writeber(path, berval)
     end
 end
 
-# commandline_arguments = get_commandline_arguments()
-# process_montecarlo(commandline_arguments["simdir"])
+commandline_arguments = get_commandline_arguments()
+process_montecarlo(commandline_arguments["simdir"])
