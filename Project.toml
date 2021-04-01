@@ -1,0 +1,15 @@
+name = "DynamicalNetworks"
+uuid = "78f8389a-bbef-49a7-b0ff-7fb09b0e42c6"
+authors = ["Zekeriya Sarı"]
+version = "0.1.0"
+
+[deps]
+Causal = "c45f814d-238a-4fdc-b3d7-673e55950ac7"
+DocStringExtensions = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
+
+[compat]
+Causal = "0.3"
+DocStringExtensions = "0.8"
+julia = "1.6"
