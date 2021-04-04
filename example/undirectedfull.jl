@@ -17,7 +17,8 @@ node = Chua()
     0  0   0   1   -1   0; 
     0  0   0   1   0   -1
 ]
-
+graph = SimpleGraph(Ξ)
+gplot(graph, nodelabel=1 : nv(graph))
 P = [1. 0 0; 0 0 0; 0 0 0]
 cls = Cluster(1 : numnodes, 1 : numnodes ÷ 2)
 model = netmodel(node, Ξ, P, cls, UndirectedFull())

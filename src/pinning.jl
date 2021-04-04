@@ -49,7 +49,7 @@ function _netmodel(node::AbstractNodeDynamics, E::AbstractMatrix, P::AbstractMat
     model 
 end 
 
-# Todo:Implement computation of passivity index for other node types.
+# TODO:Implement computation of passivity index for other node types.
 passivityindex(node::T) where {T} = error("Computation of passivity index is not implemeted for type of $T")
 function passivityindex(node::Chua) 
     α, β, a = node.α, node.β, node.a

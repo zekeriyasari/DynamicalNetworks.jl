@@ -1,5 +1,6 @@
 module DynamicalNetworks 
 
+using BlockArrays
 using LinearAlgebra
 using DocStringExtensions
 using Reexport
