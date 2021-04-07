@@ -1,5 +1,6 @@
 module DynamicalNetworks 
 
+using LightGraphs
 using BlockArrays
 using LinearAlgebra
 using DocStringExtensions
@@ -9,5 +10,6 @@ using Reexport
 include("dynamics.jl") 
 include("netode.jl") 
 include("pinning.jl") 
+include("utils.jl") 
 
 end # module 

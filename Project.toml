@@ -7,6 +7,7 @@ version = "0.1.0"
 BlockArrays = "8e7c35d0-a365-5155-bbbb-fb81a777f24e"
 Causal = "c45f814d-238a-4fdc-b3d7-673e55950ac7"
 DocStringExtensions = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
+LightGraphs = "093fc24a-ae57-5d10-9952-331d41423f4d"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
 
