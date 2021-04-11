@@ -37,10 +37,12 @@ end
 function netmodel(node::AbstractNodeDynamics, Φ::AbstractMatrix, γ::AbstractVector, P::AbstractMatrix, cls::Cluster, 
                   method::UndirectedCluster)
     # Construct QUAD matrices 
-    @assert P == I(size(P, 1)) "Expected identity matrix for P"
+    d = size(P, 1)
+    @assert P == I(d) "Expected identity matrix for P"
 
     θ = ceil(DynamicalNetworks.passivityindex(node))
-    β = controlthreshold(θ, Φ, γ, cls, method) |> ceil
+    Δ = θ * I(d)
+    β = controlthreshold(Δ, Φ, γ, cls, method) |> ceil
     A = controlmatix(γ, β, cls, method)
     E = couplingmatrix(Φ, β, cls, method) 
     G = augmentcouplingmatrix(E, cls, method) 
@@ -87,11 +89,11 @@ function controlthreshold(ϵ::Real, θ::Real, Ξ::AbstractMatrix, cls::Cluster, 
     α = 1 / ϵ * maximum(eigvals(Γ11 - Γ12 * inv(Γ22) * Γ12'))   # Control gain threshold
 end 
 
-function controlthreshold(θ::Real, Φ::AbstractMatrix, γ::AbstractVector, cls::Cluster, method::UndirectedCluster) 
+function controlthreshold(Δ::AbstractMatrix, Φ::AbstractMatrix, γ::AbstractVector, cls::Cluster, method::UndirectedCluster) 
     l = length(cls.pinnednodes)
-    num = θ + 2 * (l - 1) * maximum([measure(getblock(Φ, i, j)) for i in 1 : l, j in 1 : l if i ≠ j])
+    num = maximum(diag(Δ)) + 2 * (l - 1) * maximum([measure(getblock(Φ, i, j)) for i in 1 : l, j in 1 : l if i ≠ j])
     denum = map(1 : l) do i 
-        bmat = getblock(Φ, i, i) 
+        bmat = copy(getblock(Φ, i, i))
         bmat[end] -= γ[i] 
         -maximum(eigvals(bmat))
     end |> maximum 
